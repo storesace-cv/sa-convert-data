@@ -8,7 +8,7 @@ rules:
   - "Idempotente: importar com um batch_id único por ficheiro."
 ---
 # Objetivo
-Importar o ficheiro do cliente para `imported_raw` / `working_article` utilizando apenas o campo **nome** (desc1/desc2 = nome).
+Importar o ficheiro do cliente para `imported_raw` / `working_article`, normalizando o schema interno (nome, classificações, unidades e restantes campos estáticos) a partir do modelo original ou achatado. `desc1/desc2` mantêm-se iguais a **nome**.
 # Parâmetros
 - `FILE_OR_DIR` (opcional): ficheiro **ou** diretório. Se diretório (ou vazio), usa o .xlsx mais recente encontrado. Por defeito: `databases/import`.
 - `BATCH`: identificador único (ex: `batch-2025-10-24`).
