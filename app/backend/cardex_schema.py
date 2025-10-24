@@ -98,6 +98,19 @@ CARDEX_IMPORT_COLUMNS: list[ColumnSpec] = [
 CARDEX_FIELD_ORDER: list[str] = [spec.key for spec in CARDEX_IMPORT_COLUMNS]
 
 
+DERIVED_WORKING_COLUMNS: list[tuple[str, str]] = [
+    ("nome_sem_stop", "TEXT"),
+    ("quantidade_valor", "REAL"),
+    ("quantidade_total", "REAL"),
+    ("quantidade_unidade", "TEXT"),
+    ("quantidade_tipo", "TEXT"),
+    ("quantidade_numero", "REAL"),
+    ("flag_com_sal", "INTEGER"),
+    ("flag_sem_sal", "INTEGER"),
+    ("marca_detectada", "TEXT"),
+]
+
+
 def imported_raw_columns(include_created_at: bool = True) -> list[str]:
     """Return the ordered list of columns persisted in imported_raw."""
 
@@ -116,6 +129,7 @@ def imported_raw_columns(include_created_at: bool = True) -> list[str]:
         for key in CARDEX_FIELD_ORDER
         if key not in {"cod_artigo", "cod_barras", "nome"}
     )
+    cols.extend(name for name, _ in DERIVED_WORKING_COLUMNS)
     if include_created_at:
         cols.append("created_at")
     return cols
@@ -136,6 +150,7 @@ def imported_raw_column_types() -> list[tuple[str, str]]:
         if spec.key in {"cod_artigo", "cod_barras", "nome"}:
             continue
         columns.append((spec.key, spec.sqlite_type))
+    columns.extend(DERIVED_WORKING_COLUMNS)
     columns.append(("created_at", "TEXT NOT NULL"))
     return columns
 

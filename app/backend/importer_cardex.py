@@ -11,6 +11,7 @@ from app.backend.cardex_schema import (
 )
 from app.backend.db import connect, init_db, now_utc
 from app.backend.text_norm import normalize_name
+from app.backend.article_features import compute_article_features
 from app.config import IMPORT_DIR, ensure_dirs
 
 
@@ -124,6 +125,7 @@ def import_cardex_reformulado(xlsx_path: str | None, batch_id: str) -> Dict[str,
         record["nome"] = nome
         nome_norm = normalize_name(nome)
         now = now_utc()
+        features = compute_article_features(nome)
 
         field_values = {key: record.get(key) for key in CARDEX_FIELD_ORDER}
 
@@ -135,6 +137,24 @@ def import_cardex_reformulado(xlsx_path: str | None, batch_id: str) -> Dict[str,
             values.append(excel_idx)
           elif col == "nome_norm":
             values.append(nome_norm)
+          elif col == "nome_sem_stop":
+            values.append(features.nome_sem_stop)
+          elif col == "quantidade_valor":
+            values.append(features.quantidade_valor)
+          elif col == "quantidade_total":
+            values.append(features.quantidade_total)
+          elif col == "quantidade_unidade":
+            values.append(features.quantidade_unidade)
+          elif col == "quantidade_tipo":
+            values.append(features.quantidade_tipo)
+          elif col == "quantidade_numero":
+            values.append(features.quantidade_numero)
+          elif col == "flag_com_sal":
+            values.append(1 if features.flag_com_sal else 0)
+          elif col == "flag_sem_sal":
+            values.append(1 if features.flag_sem_sal else 0)
+          elif col == "marca_detectada":
+            values.append(features.marca_detectada)
           elif col in ("desc1", "desc2"):
             values.append(nome)
           elif col == "created_at":
@@ -145,9 +165,26 @@ def import_cardex_reformulado(xlsx_path: str | None, batch_id: str) -> Dict[str,
         cur = conn.execute(insert_sql, values)
         raw_id = cur.lastrowid
         inserted += 1
+        working_values = [
+          batch_id,
+          raw_id,
+          nome_norm,
+          features.nome_sem_stop,
+          features.quantidade_valor,
+          features.quantidade_total,
+          features.quantidade_unidade,
+          features.quantidade_tipo,
+          features.quantidade_numero,
+          1 if features.flag_com_sal else 0,
+          1 if features.flag_sem_sal else 0,
+          features.marca_detectada,
+        ]
         conn.execute(
-          """INSERT INTO working_article(batch_id, raw_id, nome_norm) VALUES (?,?,?)""",
-          (batch_id, raw_id, nome_norm),
+          """INSERT INTO working_article(batch_id, raw_id, nome_norm, nome_sem_stop, quantidade_valor,
+                     quantidade_total, quantidade_unidade, quantidade_tipo, quantidade_numero,
+                     flag_com_sal, flag_sem_sal, marca_detectada)
+                 VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
+          working_values,
         )
         w_inserted += 1
 

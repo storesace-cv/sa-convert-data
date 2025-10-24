@@ -45,7 +45,22 @@ CREATE TABLE IF NOT EXISTS group_pattern (id INTEGER PRIMARY KEY AUTOINCREMENT, 
 CREATE TABLE IF NOT EXISTS decision_log (id INTEGER PRIMARY KEY AUTOINCREMENT, scope TEXT DEFAULT 'global', action TEXT NOT NULL, payload_json TEXT, ts TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS class_map (id INTEGER PRIMARY KEY AUTOINCREMENT, scope TEXT DEFAULT 'global', familia TEXT, subfamilia TEXT, canonical_label TEXT, support_count INTEGER DEFAULT 1, source TEXT DEFAULT 'learning_file', UNIQUE(scope, familia, subfamilia));
 {_imported_raw_create_sql()}
-CREATE TABLE IF NOT EXISTS working_article (id INTEGER PRIMARY KEY AUTOINCREMENT, batch_id TEXT NOT NULL, raw_id INTEGER NOT NULL, nome_norm TEXT NOT NULL, FOREIGN KEY (raw_id) REFERENCES imported_raw(id));
+CREATE TABLE IF NOT EXISTS working_article (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    batch_id TEXT NOT NULL,
+    raw_id INTEGER NOT NULL,
+    nome_norm TEXT NOT NULL,
+    nome_sem_stop TEXT,
+    quantidade_valor REAL,
+    quantidade_total REAL,
+    quantidade_unidade TEXT,
+    quantidade_tipo TEXT,
+    quantidade_numero REAL,
+    flag_com_sal INTEGER,
+    flag_sem_sal INTEGER,
+    marca_detectada TEXT,
+    FOREIGN KEY (raw_id) REFERENCES imported_raw(id)
+);
 CREATE TABLE IF NOT EXISTS cluster_proposal (id INTEGER PRIMARY KEY AUTOINCREMENT, batch_id TEXT NOT NULL, label_sugerido TEXT NOT NULL, created_at TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS cluster_member (id INTEGER PRIMARY KEY AUTOINCREMENT, cluster_id INTEGER NOT NULL, working_id INTEGER NOT NULL, score REAL, selected_by_user INTEGER DEFAULT 1, FOREIGN KEY (cluster_id) REFERENCES cluster_proposal(id), FOREIGN KEY (working_id) REFERENCES working_article(id));
 CREATE TABLE IF NOT EXISTS approval_decision (id INTEGER PRIMARY KEY AUTOINCREMENT, cluster_id INTEGER NOT NULL, canonical_id INTEGER, artigo_base_raw_id INTEGER, unit_default TEXT, unit_compra TEXT, unit_stock TEXT, unit_log TEXT, decided_at TEXT NOT NULL, FOREIGN KEY (cluster_id) REFERENCES cluster_proposal(id), FOREIGN KEY (canonical_id) REFERENCES canonical_item(id), FOREIGN KEY (artigo_base_raw_id) REFERENCES imported_raw(id));
@@ -60,6 +75,7 @@ def init_db():
   with conn:
     conn.executescript(SCHEMA_SQL)
     _ensure_imported_raw_columns(conn)
+    _ensure_working_article_columns(conn)
   conn.close()
 def now_utc():
   return datetime.datetime.utcnow().strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -71,3 +87,22 @@ def _ensure_imported_raw_columns(conn: sqlite3.Connection):
   for name, col_type in imported_raw_column_types():
     if name not in existing:
       conn.execute(f"ALTER TABLE imported_raw ADD COLUMN {name} {col_type}")
+
+
+def _ensure_working_article_columns(conn: sqlite3.Connection):
+  cur = conn.execute("PRAGMA table_info(working_article)")
+  existing = {row[1] for row in cur.fetchall()}
+  derived = [
+    ("nome_sem_stop", "TEXT"),
+    ("quantidade_valor", "REAL"),
+    ("quantidade_total", "REAL"),
+    ("quantidade_unidade", "TEXT"),
+    ("quantidade_tipo", "TEXT"),
+    ("quantidade_numero", "REAL"),
+    ("flag_com_sal", "INTEGER"),
+    ("flag_sem_sal", "INTEGER"),
+    ("marca_detectada", "TEXT"),
+  ]
+  for name, col_type in derived:
+    if name not in existing:
+      conn.execute(f"ALTER TABLE working_article ADD COLUMN {name} {col_type}")
