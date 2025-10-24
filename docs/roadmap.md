@@ -57,10 +57,10 @@ definition_of_done:
   - "All ingestion scripts idempotent and logged in SoT."
   - "Unit tests covering dedupe + normalization edge cases passing."
   - "Baseline metrics (duplicate rate, normalization coverage) captured in progress.json."
-progress: 40
-status: in-progress
+progress: 100
+status: done
 expected_output:
-  - databases/app/data.db
+  - databases/app/schema.sql
   - tools/learn.py
   - rules/learning_rules.json
 idempotent: true

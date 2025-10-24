@@ -3,7 +3,8 @@ from __future__ import annotations
 import os
 import re
 import sqlite3
-from typing import Any, Dict, List
+from itertools import combinations
+from typing import Any, Dict, Iterable, List
 
 from openpyxl import load_workbook
 
@@ -64,6 +65,58 @@ def _fingerprint(term_norm: str, explicit: str | None) -> str:
     return term_norm
 
 
+def _normalize_optional(value: str | None) -> str | None:
+    if value is None:
+        return None
+    norm = normalize_name(value)
+    return norm or None
+
+
+def _fetch_canonical_label(conn: sqlite3.Connection, canonical_id: int | None) -> str | None:
+    if canonical_id is None:
+        return None
+    cur = conn.execute(
+        "SELECT name_canonico FROM canonical_item WHERE id=?",
+        (canonical_id,),
+    )
+    row = cur.fetchone()
+    return row[0] if row else None
+
+
+def _record_pair_judgements(
+    conn: sqlite3.Connection,
+    scope: str,
+    synonyms: Iterable[str],
+) -> int:
+    values = sorted({syn for syn in synonyms if syn})
+    if len(values) < 2:
+        return 0
+    updates = 0
+    for left, right in combinations(values, 2):
+        if left == right:
+            continue
+        l_key, r_key = (left, right) if left <= right else (right, left)
+        try:
+            conn.execute(
+                """
+                INSERT INTO pair_judgement(scope, left_term_norm, right_term_norm, label, support_count, source)
+                VALUES(?,?,?,?,?,?)
+                """,
+                (scope, l_key, r_key, "duplicate", 1, "learning_file"),
+            )
+        except sqlite3.IntegrityError:
+            conn.execute(
+                """
+                UPDATE pair_judgement
+                SET support_count=support_count+1, source='learning_file'
+                WHERE scope=? AND left_term_norm=? AND right_term_norm=? AND label='duplicate'
+                """,
+                (scope, l_key, r_key),
+            )
+        updates += 1
+    return updates
+
+
 def learn_from_xlsx(xlsx_path: str, scope: str = "global") -> Dict[str, Any]:
     if not os.path.exists(xlsx_path):
         raise FileNotFoundError(f"Ficheiro não encontrado: {xlsx_path}")
@@ -121,6 +174,7 @@ def learn_from_xlsx(xlsx_path: str, scope: str = "global") -> Dict[str, Any]:
         canonical_created = 0
         class_map_updates = 0
         group_pattern_updates = 0
+        pair_judgement_updates = 0
         logs_recorded = 0
 
         with conn:
@@ -133,27 +187,45 @@ def learn_from_xlsx(xlsx_path: str, scope: str = "global") -> Dict[str, Any]:
                     continue
 
                 term_norm = normalize_name(nome)
-                familia = _cell_text(row, col_fam)
-                subfamilia = _cell_text(row, col_sub)
-                canonical_label = _resolve_canonical_label(scope, familia, subfamilia, term_norm)
+                familia = _normalize_optional(_cell_text(row, col_fam))
+                subfamilia = _normalize_optional(_cell_text(row, col_sub))
 
-                cur = conn.execute(
-                    "SELECT id FROM canonical_item WHERE name_canonico=? AND scope=?",
-                    (canonical_label, scope),
-                )
-                row_item = cur.fetchone()
-                if row_item:
-                    canonical_id = row_item[0]
-                else:
-                    cur = conn.execute(
-                        """
-                        INSERT INTO canonical_item(name_canonico, scope, rule_version, created_at)
-                        VALUES(?,?,?,?)
-                        """,
-                        (canonical_label, scope, "v1", now_utc()),
+                existing = conn.execute(
+                    "SELECT canonical_id FROM canonical_synonym WHERE scope=? AND term_norm=?",
+                    (scope, term_norm),
+                ).fetchone()
+
+                canonical_id: int | None = None
+                canonical_label: str | None = None
+
+                if existing and existing[0] is not None:
+                    canonical_id = existing[0]
+                    canonical_label = _fetch_canonical_label(conn, canonical_id)
+
+                if canonical_id is None or canonical_label is None:
+                    canonical_label = _resolve_canonical_label(
+                        scope, familia, subfamilia, term_norm
                     )
-                    canonical_id = cur.lastrowid
-                    canonical_created += 1
+                    cur = conn.execute(
+                        "SELECT id FROM canonical_item WHERE name_canonico=? AND scope=?",
+                        (canonical_label, scope),
+                    )
+                    row_item = cur.fetchone()
+                    if row_item:
+                        canonical_id = row_item[0]
+                    else:
+                        cur = conn.execute(
+                            """
+                            INSERT INTO canonical_item(name_canonico, scope, rule_version, created_at)
+                            VALUES(?,?,?,?)
+                            """,
+                            (canonical_label, scope, "v1", now_utc()),
+                        )
+                        canonical_id = cur.lastrowid
+                        canonical_created += 1
+
+                if canonical_label is None:
+                    canonical_label = _fetch_canonical_label(conn, canonical_id) or ""
 
                 synonyms = [term_norm]
                 if col_synonyms is not None and col_synonyms < len(row):
@@ -182,6 +254,10 @@ def learn_from_xlsx(xlsx_path: str, scope: str = "global") -> Dict[str, Any]:
                             (canonical_id, scope, synonym),
                         )
                         synonyms_upserted += 1
+
+                pair_judgement_updates += _record_pair_judgements(
+                    conn, scope, unique_synonyms
+                )
 
                 if familia or subfamilia:
                     fam_value = familia or ""
@@ -289,6 +365,7 @@ def learn_from_xlsx(xlsx_path: str, scope: str = "global") -> Dict[str, Any]:
         "canonical_created": canonical_created,
         "class_map_updates": class_map_updates,
         "group_pattern_updates": group_pattern_updates,
+        "pair_judgement_updates": pair_judgement_updates,
         "logs_recorded": logs_recorded,
     }
 
@@ -318,6 +395,13 @@ def forget_learning(scope: str = "global") -> Dict[str, Any]:
         group_patterns_deleted = _deleted(
             conn.execute(
                 "DELETE FROM group_pattern WHERE scope=? AND source='learning_file'",
+                (scope,),
+            )
+        )
+
+        pair_judgements_deleted = _deleted(
+            conn.execute(
+                "DELETE FROM pair_judgement WHERE scope=? AND source='learning_file'",
                 (scope,),
             )
         )
@@ -354,6 +438,7 @@ def forget_learning(scope: str = "global") -> Dict[str, Any]:
             "group_patterns_deleted": group_patterns_deleted,
             "canonical_items_deleted": canonical_items_deleted,
             "logs_deleted": logs_deleted,
+            "pair_judgements_deleted": pair_judgements_deleted,
         }
 
         action_id = log_action(conn, scope, "learning_forget", payload)
