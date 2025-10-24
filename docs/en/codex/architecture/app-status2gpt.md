@@ -1,35 +1,13 @@
-# App Status — Source of Truth (SoT)
-This document is **the single source of truth** for Codex and humans.
-Every Codex runner **MUST** append a changelog entry.
+# App Status — SoT (sa-convert-data)
 
-## Index
-- SoT index: `docs/en/codex/architecture/app-status-index.json`
-- This file: `docs/en/codex/architecture/app-status2gpt.md`
+Generated human-readable mirror of the canonical state (`progress.json`) and runner inventory.
 
-## Project
-- Name: sa-convert-data
-- GUI: pywebview (direct, no HTTP server)
-- OS: macOS (Apple Silicon compatible)
+- Update via `scripts/codex/detect_state.py --write` and `scripts/rebuild_docs.sh`.
+- Runners are idempotent and live in `docs/en/codex/runners/`.
 
-## Changelog
-- 2025-10-24T00:17:25Z — Seed v2: SSH remote fixed, `.codex.env` added, start.sh & runners ready.
-
-## Change @ 2025-10-24T00:36:04Z
-- Runner: 001 — Branch setup (HTTPS)
-- Changed: git remote (origin), branches (main/my-sa-convert-data)
-- Summary: Configurado origin via HTTPS e criado/alinhado o branch pessoal.
-
-## Change @ 2025-10-24T00:36:04Z
-- Runner: 020 — Start environment runner
-- Changed: start.sh (exec), .venv/*, requirements.txt (read)
-- Summary: Criado/validado venv e instaladas dependências.
-
-## Change @ 2025-10-24T00:57:09Z
-- Runner: 100 — Scaffold da aplicação
-- Changed: app/*, tools/*, rules/*, main.py
-- Summary: Esqueleto pywebview direto + DB + modo aprendizagem + runners.
-
-## Change @ 2025-10-24T00:57:09Z
-- Runner: 110 — DB initialized
-- Changed: databases/app/data.db (created), tools/init_db.py (exec)
-- Summary: Schema criado/validado (memória de decisões).
+## Signals
+- Backend present (app/, main.py)
+- Tests present (tests/)
+- Docs present (docs/)
+- Data inputs (databases/), domain rules (rules/), tools (tools/)
+- Launchers (launcher, start.sh), venv (.venv)

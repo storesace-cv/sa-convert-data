@@ -1,0 +1,11 @@
+title: "330 — Export Excel with rules applied"
+audience: "Codex executor"
+rules:
+  - "Idempotent."
+goals:
+  - "Generate Excel with classification, dedup tags, capitalization & accent removal."
+on_success:
+  progress:
+    phase: 2
+    tasks:
+      export_excel: 100

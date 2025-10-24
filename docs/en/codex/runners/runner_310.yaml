@@ -1,0 +1,14 @@
+title: "310 — DB migrate/init (create raw_row_json etc.)"
+audience: "Codex executor"
+rules:
+  - "Idempotent."
+sot:
+  index: docs/en/codex/architecture/app-status-index.json
+  text: docs/en/codex/architecture/app-status2gpt.md
+goals:
+  - "Create/init working DB with raw_row_json and staging tables."
+on_success:
+  progress:
+    phase: 4
+    tasks:
+      db_migrate_init: 100

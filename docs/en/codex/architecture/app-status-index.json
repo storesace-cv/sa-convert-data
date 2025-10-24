@@ -1,18 +1,41 @@
 {
-  "sot_files": {
-    "index": "docs/en/codex/architecture/app-status-index.json",
-    "text": "docs/en/codex/architecture/app-status2gpt.md"
+  "version": 1,
+  "generated_at": "2025-10-24T20:55:23.798628Z",
+  "sources": {
+    "text": "docs/en/codex/architecture/app-status2gpt.md",
+    "progress": "docs/en/codex/progress.json",
+    "runners_dir": "docs/en/codex/runners"
   },
-  "artifacts": {
-    "mode": "pywebview-direct",
-    "last_update": "2025-10-24T00:57:19Z",
-    "repo_remote": "git@github.com:storesace-cv/sa-convert-data.git",
-    "branch_user": "my-sa-convert-data"
+  "signals": {
+    "backend": [
+      "app",
+      "main.py"
+    ],
+    "frontend": [],
+    "tests": [
+      "tests"
+    ],
+    "ci": [],
+    "docs": [
+      "docs"
+    ],
+    "scripts": [],
+    "data": [
+      "databases"
+    ],
+    "rules": [
+      "rules"
+    ],
+    "tools": [
+      "tools"
+    ],
+    "launchers": [
+      "launcher",
+      "start.sh"
+    ],
+    "venv": [
+      ".venv"
+    ]
   },
-  "rules": [
-    "ALWAYS update app-status2gpt.md after running any codex runner.",
-    "Keep actions idempotent.",
-    "Paths are repo-root relative.",
-    "Never change the 2-line header of the export model."
-  ]
+  "notes": "Regenerate with scripts/codex/detect_state.py --write"
 }
