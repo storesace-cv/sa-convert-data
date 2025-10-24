@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "updated_at": "NOW",
+  "updated_at": "2025-10-24T21:18:42.333765Z",
   "phases": {
     "1": {
       "title": "Foundation",
@@ -45,8 +45,7 @@
       "percent": 0,
       "tasks": {
         "packaging": 0,
-        "one_click_runner": 0
-        ,
+        "one_click_runner": 0,
         "runbooks": 0
       }
     }
