@@ -1,0 +1,19 @@
+familias:
+  CARNE:
+    VACA: "CARNE DE VACA (m)"
+    PORCO: "CARNE DE PORCO (m)"
+    _default: "CARNE (m)"
+  LATICINIOS:
+    MANTEIGA: "MANTEIGA (m)"
+    _default: "LATICINIOS (m)"
+  FRUTA:
+    _default: "FRUTAS (m)"
+  VEGETAL:
+    _default: "VEGETAIS (m)"
+  FUMADOS:
+    _default: "FUMADOS (m)"
+sinonimos:
+  BOVINO: VACA
+  SUINO: PORCO
+proibicoes:
+  - ["COM SAL", "SEM SAL"]
