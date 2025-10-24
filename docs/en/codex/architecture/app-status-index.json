@@ -1,38 +1,10 @@
 {
   "version": 1,
-  "generated_at": "2025-10-24T20:57:30.699442Z",
+  "generated_at": "2025-10-24T21:18:42.334484Z",
   "sources": {
-    "text": "/Users/jorgepeixinho/Documents/NetxCloud/projectos/bwb/desenvolvimento/sa-convert-data/docs/en/codex/architecture/app-status2gpt.md",
-    "progress": "/Users/jorgepeixinho/Documents/NetxCloud/projectos/bwb/desenvolvimento/sa-convert-data/docs/en/codex/progress.json",
-    "runners_dir": "/Users/jorgepeixinho/Documents/NetxCloud/projectos/bwb/desenvolvimento/sa-convert-data/docs/en/codex/runners"
+    "text": "docs/en/codex/architecture/app-status2gpt.md",
+    "progress": "docs/en/codex/progress.json",
+    "runners_dir": "docs/en/codex/runners"
   },
-  "signals": {
-    "backend": [
-      "app",
-      "main.py"
-    ],
-    "tests": [
-      "tests"
-    ],
-    "docs": [
-      "docs"
-    ],
-    "data": [
-      "databases"
-    ],
-    "rules": [
-      "rules"
-    ],
-    "tools": [
-      "tools"
-    ],
-    "launchers": [
-      "launcher",
-      "start.sh"
-    ],
-    "venv": [
-      ".venv"
-    ],
-    "ci": []
-  }
+  "notes": "Entry point for Smart-Mode."
 }

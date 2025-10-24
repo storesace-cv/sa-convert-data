@@ -1,3 +1,3 @@
-# App Status — SoT (sa-convert-data)
+# App Status — SoT
 
-_Last updated: 2025-10-24T20:57:30.699599Z_
+This file mirrors progress.json. Managed by scripts.
