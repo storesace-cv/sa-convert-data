@@ -11,13 +11,15 @@ rules:
 Gerar propostas de clusters a partir do `BATCH` importado.
 # Parâmetros
 - `BATCH`: o mesmo batch_id usado em 200.
+- `SCOPE` (opcional): contexto dos dados de aprendizagem (por defeito `global`).
 # Passos
 ```bash
 source .venv/bin/activate 2>/dev/null || true
 BATCH="${BATCH:-batch-demo}" python - <<'PY'
 from app.backend.clustering import propose_clusters
 import os, pprint
-print(propose_clusters(os.environ["BATCH"]))
+scope = os.environ.get("SCOPE", "global")
+print(propose_clusters(os.environ["BATCH"], scope))
 PY
 ```
 # Pós-condições

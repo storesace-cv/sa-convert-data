@@ -67,6 +67,17 @@ class ArticleRecord:
         )
 
 
+@dataclass(slots=True)
+class KnownPattern:
+    canonical_id: int | None
+    canonical_label: str | None
+    unit_default: str | None
+    unit_compra: str | None
+    unit_stock: str | None
+    unit_log: str | None
+    base_article_hint: str | None
+
+
 def _fetch_terms(batch_id: str) -> List[ArticleRecord]:
     conn = connect()
     cur = conn.execute(
@@ -109,7 +120,12 @@ def _fetch_terms(batch_id: str) -> List[ArticleRecord]:
     return records
 
 
-def propose_clusters(batch_id: str, t1: float = 0.85, t2: float = 0.92) -> Dict[str, Any]:
+def propose_clusters(
+    batch_id: str,
+    scope: str = "global",
+    t1: float = 0.85,
+    t2: float = 0.92,
+) -> Dict[str, Any]:
     init_db()
     records = _fetch_terms(batch_id)
     if not records:
@@ -179,31 +195,38 @@ def propose_clusters(batch_id: str, t1: float = 0.85, t2: float = 0.92) -> Dict[
         components.append(comp)
 
     conn = connect()
-    created = 0
-    members = 0
-    with conn:
-        for comp in components:
-            if len(comp) == 1:
-                continue
-            label = _suggest_label(conn, records, comp)
-            cur = conn.execute(
-                "INSERT INTO cluster_proposal(batch_id, label_sugerido, created_at) VALUES(?,?,?)",
-                (batch_id, label, now_utc()),
-            )
-            cluster_id = cur.lastrowid
-            created += 1
-            for idx in comp:
-                if idx == comp[0]:
-                    sc = 1.0
-                else:
-                    sc = _pair_similarity(similarity_cache, comp[0], idx, records, t2)
-                selected = 1 if idx == comp[0] or sc >= t2 else 0
-                conn.execute(
-                    "INSERT INTO cluster_member(cluster_id, working_id, score, selected_by_user) VALUES(?,?,?,?)",
-                    (cluster_id, records[idx].id, sc, selected),
+    try:
+        knowledge = _load_known_patterns(conn, scope, records)
+        created = 0
+        members = 0
+        with conn:
+            for comp in components:
+                if len(comp) == 1:
+                    continue
+                label, unit_info = _suggest_label(conn, records, comp, scope, knowledge)
+                label_display = _format_label_with_units(label, unit_info)
+                cur = conn.execute(
+                    "INSERT INTO cluster_proposal(batch_id, label_sugerido, created_at) VALUES(?,?,?)",
+                    (batch_id, label_display, now_utc()),
                 )
-                members += 1
-    return {"ok": True, "batch_id": batch_id, "clusters_created": created, "members": members}
+                cluster_id = cur.lastrowid
+                created += 1
+                for idx in comp:
+                    if idx == comp[0]:
+                        sc = 1.0
+                    else:
+                        sc = _pair_similarity(similarity_cache, comp[0], idx, records, t2)
+                    term_norm = records[idx].nome_norm
+                    known = knowledge.get(term_norm)
+                    selected = 1 if (known is not None or idx == comp[0] or sc >= t2) else 0
+                    conn.execute(
+                        "INSERT INTO cluster_member(cluster_id, working_id, score, selected_by_user) VALUES(?,?,?,?)",
+                        (cluster_id, records[idx].id, sc, selected),
+                    )
+                    members += 1
+        return {"ok": True, "batch_id": batch_id, "clusters_created": created, "members": members}
+    finally:
+        conn.close()
 
 
 def _remove_weak_bridges(
@@ -262,7 +285,24 @@ def _combined_similarity_terms(term_a: str, term_b: str) -> float:
     return 0.6 * cos_val + 0.4 * jw_val
 
 
-def _suggest_label(conn, records: List[ArticleRecord], comp: List[int]) -> str:
+def _suggest_label(
+    conn,
+    records: List[ArticleRecord],
+    comp: List[int],
+    scope: str,
+    knowledge: Dict[str, KnownPattern],
+) -> tuple[str, Dict[str, str | None]]:
+    for idx in comp:
+        record = records[idx]
+        known = knowledge.get(record.nome_norm)
+        if known and known.canonical_label:
+            return known.canonical_label, {
+                "unit_default": known.unit_default,
+                "unit_compra": known.unit_compra,
+                "unit_stock": known.unit_stock,
+                "unit_log": known.unit_log,
+            }
+
     combos: dict[tuple[str, str], int] = defaultdict(int)
     for idx in comp:
         record = records[idx]
@@ -271,20 +311,25 @@ def _suggest_label(conn, records: List[ArticleRecord], comp: List[int]) -> str:
 
     sorted_combos = sorted(combos.items(), key=lambda item: item[1], reverse=True)
     for (familia, subfamilia), _ in sorted_combos:
-        label = _label_from_class_map(conn, familia, subfamilia)
+        label = _label_from_class_map(conn, scope, familia, subfamilia)
         if label:
-            return label
+            return label, {}
 
     for (familia, subfamilia), _ in sorted_combos:
-        label = label_from_rules(familia, subfamilia)
+        label = label_from_rules(familia, subfamilia, scope=scope)
         if label:
-            return label
+            return label, {}
 
     fallback = records[comp[0]].significant_token
-    return f"{fallback or 'ITEM'} (m)"
+    return f"{fallback or 'ITEM'} (m)", {}
 
 
-def _label_from_class_map(conn, familia: str | None, subfamilia: str | None) -> str | None:
+def _label_from_class_map(
+    conn,
+    scope: str,
+    familia: str | None,
+    subfamilia: str | None,
+) -> str | None:
     fam = (familia or "").strip().upper()
     sub = (subfamilia or "").strip().upper()
     cur = conn.execute(
@@ -296,7 +341,136 @@ def _label_from_class_map(conn, familia: str | None, subfamilia: str | None) -> 
           AND UPPER(COALESCE(subfamilia, ''))=?
         LIMIT 1
         """,
-        ("global", fam, sub),
+        (scope, fam, sub),
     )
     row = cur.fetchone()
-    return row[0] if row else None
+    if row:
+        return row[0]
+    if scope != "global":
+        cur = conn.execute(
+            """
+            SELECT canonical_label
+            FROM class_map
+            WHERE scope='global'
+              AND UPPER(COALESCE(familia, ''))=?
+              AND UPPER(COALESCE(subfamilia, ''))=?
+            LIMIT 1
+            """,
+            (fam, sub),
+        )
+        row = cur.fetchone()
+        if row:
+            return row[0]
+    return None
+
+
+def _load_known_patterns(
+    conn,
+    scope: str,
+    records: List[ArticleRecord],
+) -> Dict[str, KnownPattern]:
+    term_norms = sorted({rec.nome_norm for rec in records if rec.nome_norm})
+    if not term_norms:
+        return {}
+
+    knowledge: Dict[str, KnownPattern] = {}
+    canonical_ids: set[int] = set()
+
+    scopes = [scope]
+    if scope != "global":
+        scopes.append("global")
+
+    for current_scope in scopes:
+        placeholders = ",".join(["?"] * len(term_norms))
+        cur = conn.execute(
+            f"""
+            SELECT term_norm, canonical_id
+            FROM canonical_synonym
+            WHERE scope=? AND term_norm IN ({placeholders})
+            """,
+            [current_scope, *term_norms],
+        )
+        for term_norm, canonical_id in cur.fetchall():
+            if term_norm in knowledge:
+                continue
+            knowledge[term_norm] = KnownPattern(
+                canonical_id=canonical_id,
+                canonical_label=None,
+                unit_default=None,
+                unit_compra=None,
+                unit_stock=None,
+                unit_log=None,
+                base_article_hint=None,
+            )
+            if canonical_id is not None:
+                canonical_ids.add(canonical_id)
+
+    placeholders = ",".join(["?"] * len(term_norms))
+    scope_placeholders = ",".join(["?"] * len(scopes))
+    cur = conn.execute(
+        f"""
+        SELECT scope, fingerprint, canonical_id, unit_default, unit_compra, unit_stock, unit_log, base_article_hint
+        FROM group_pattern
+        WHERE scope IN ({scope_placeholders}) AND fingerprint IN ({placeholders})
+        """,
+        [*scopes, *term_norms],
+    )
+    pattern_rows = cur.fetchall()
+    for _, _, canonical_id, _, _, _, _, _ in pattern_rows:
+        if canonical_id is not None:
+            canonical_ids.add(canonical_id)
+
+    if canonical_ids:
+        id_placeholders = ",".join(["?"] * len(canonical_ids))
+        cur = conn.execute(
+            f"SELECT id, name_canonico FROM canonical_item WHERE id IN ({id_placeholders})",
+            list(canonical_ids),
+        )
+        labels = {row[0]: row[1] for row in cur.fetchall()}
+    else:
+        labels = {}
+
+    for term_norm, info in knowledge.items():
+        if info.canonical_id is not None and info.canonical_id in labels:
+            info.canonical_label = labels[info.canonical_id]
+
+    for _, fingerprint, canonical_id, ud, uc, us, ul, hint in pattern_rows:
+        label = labels.get(canonical_id)
+        entry = knowledge.get(fingerprint)
+        if entry:
+            entry.canonical_id = entry.canonical_id or canonical_id
+            entry.canonical_label = entry.canonical_label or label
+            entry.unit_default = entry.unit_default or ud
+            entry.unit_compra = entry.unit_compra or uc
+            entry.unit_stock = entry.unit_stock or us
+            entry.unit_log = entry.unit_log or ul
+            entry.base_article_hint = entry.base_article_hint or hint
+        else:
+            knowledge[fingerprint] = KnownPattern(
+                canonical_id=canonical_id,
+                canonical_label=label,
+                unit_default=ud,
+                unit_compra=uc,
+                unit_stock=us,
+                unit_log=ul,
+                base_article_hint=hint,
+            )
+
+    return knowledge
+
+
+def _format_label_with_units(label: str, units: Dict[str, str | None]) -> str:
+    mapping = [
+        ("unit_default", "UD"),
+        ("unit_compra", "UC"),
+        ("unit_stock", "US"),
+        ("unit_log", "UL"),
+    ]
+    parts: List[str] = []
+    for key, prefix in mapping:
+        value = units.get(key)
+        if value:
+            parts.append(f"{prefix}={value}")
+    if parts:
+        return f"{label} · {' | '.join(parts)}"
+    return label
