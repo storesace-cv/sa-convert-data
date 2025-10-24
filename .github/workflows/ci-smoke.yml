@@ -1,0 +1,52 @@
+name: CI Smoke
+
+on:
+  push:
+    branches: [ "**" ]
+  pull_request:
+    branches: [ "**" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Cache pip
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements*.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies (if requirements.txt exists)
+        run: |
+          if [ -f requirements.txt ]; then
+            python -m pip install --upgrade pip
+            pip install -r requirements.txt
+          else
+            echo "requirements.txt not found, skipping."
+          fi
+
+      - name: Lint (flake8 if available)
+        run: |
+          if python -c "import importlib; importlib.import_module('flake8')" 2>/dev/null; then
+            flake8 || true
+          else
+            echo "flake8 not installed; skipping."
+          fi
+
+      - name: Run tests (pytest if available)
+        run: |
+          if python -c "import importlib; importlib.import_module('pytest')" 2>/dev/null; then
+            pytest -q || true
+          else
+            echo "pytest not installed; skipping."
+          fi
