@@ -26,3 +26,8 @@ This file mirrors progress.json. Managed by scripts.
 - Runner: 315 — Artigo - Classificacao (only COMPRA / COMPRA/VENDA, default COMPRA/VENDA)
 - Changed: app/backend/classification_engine.py, app/backend/classification_rules.py, app/backend/exporter_excel.py, rules/classification_rules.json, tools/classify.py, tests/test_classification_engine.py, tests/test_exporter_excel.py, docs/roadmap.md, docs/en/codex/progress.json, docs/en/codex/architecture/app-status-index.json
 - Summary: Added canonical classification inference with confidence metrics, CLI generation tool, exporter integration, and updated progress documentation for the classification rules milestone.
+
+## Change @ 2025-10-25T00:30:00Z
+- Runner: Phase 3 — Export & Validation
+- Changed: app/backend/export_validation.py, app/backend/exporter_excel.py, tools/export_validate.py, tests/test_export_validation.py, tests/test_exporter_excel.py, docs/en/codex/progress.json, docs/en/codex/architecture/app-status-index.json
+- Summary: Implemented export validation with canonical structure enforcement and half-up rounding, wired results into the Excel exporter, added CLI orchestration with decision logging, expanded automated coverage, and marked Phase 3 deliverables complete in SoT.

@@ -154,6 +154,8 @@ def test_exporter_populates_all_columns_and_log_sheet(tmp_path, monkeypatch):
     assert result["ok"] is True
     assert result["rows"] == 1
     assert Path(result["out"]) == out_path
+    assert result["validation"]["total_rows"] == 1
+    assert result["cleaned_rows"][0]["nome"] == "Produto Canonico"
 
     wb = load_workbook(out_path)
     try:
@@ -193,6 +195,10 @@ def test_exporter_populates_all_columns_and_log_sheet(tmp_path, monkeypatch):
         assert meta["clusters_suggested"] == 1
         assert meta["clusters_approved"] == 1
         assert meta["items_excluded"] == 1
+        assert meta["validation_rounding_adjustments"] == 0
+        assert meta["validation_invalid_monetary"] == 0
+        assert meta["validation_defaults_applied"] >= 0
+        assert meta["validation_missing_columns"] >= 0
 
         conn_check = connect()
         try:
@@ -200,8 +206,14 @@ def test_exporter_populates_all_columns_and_log_sheet(tmp_path, monkeypatch):
                 "SELECT action, payload_json, ts FROM decision_log ORDER BY id"
             )
             entries = cur.fetchall()
-            assert {row[0] for row in entries} == {"cardex_import", "export_generated"}
-            export_entry = next(row for row in entries if row[0] == "export_generated")
+            actions = {row[0] for row in entries}
+            assert {"cardex_import", "export_generated"}.issubset(actions)
+            export_entry = next(
+                row
+                for row in entries
+                if row[0] == "export_generated"
+                and json.loads(row[1]).get("batch_id") == batch_id
+            )
             payload = json.loads(export_entry[1])
             assert payload["batch_id"] == batch_id
             assert payload["out_file"] == str(out_path)
