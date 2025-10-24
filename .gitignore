@@ -6,3 +6,7 @@ dist/
 build/
 *.egg-info/
 .env
+data.sqlite
+data.db
+databases/app/*.sqlite
+databases/app/*.db
