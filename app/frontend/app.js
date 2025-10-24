@@ -142,17 +142,6 @@ function updateClusterWarnings(state, clusterData, warningBox, prohibitions, wra
   }
 }
 
-async function readSot() {
-  const output = document.getElementById('status');
-  output.textContent = 'A carregar...';
-  try {
-    const res = await window.pywebview.api.read_sot();
-    output.textContent = stringifyResult(res);
-  } catch (e) {
-    output.textContent = 'Erro: ' + e;
-  }
-}
-
 async function runLearning() {
   const scope = getCurrentScope();
   const fpath = document.getElementById('learn-path').value;
@@ -163,6 +152,29 @@ async function runLearning() {
     output.textContent = stringifyResult(result);
   } catch (e) {
     output.textContent = 'Erro: ' + e;
+  }
+}
+
+async function chooseFileForInput(targetId, purpose) {
+  const input = document.getElementById(targetId);
+  if (!input) {
+    return;
+  }
+
+  const filters = purpose === 'excel'
+    ? [{ description: 'Ficheiros Excel', extensions: ['*.xlsx', '*.xls'] }]
+    : [];
+
+  try {
+    const response = await window.pywebview.api.choose_file({ filters });
+    if (!response || !response.ok || response.canceled || !response.path) {
+      return;
+    }
+    input.value = response.path;
+    input.dispatchEvent(new Event('input', { bubbles: true }));
+    input.dispatchEvent(new Event('change', { bubbles: true }));
+  } catch (err) {
+    window.alert('Erro ao abrir o seletor de ficheiros: ' + err);
   }
 }
 
@@ -510,9 +522,16 @@ async function loadClusters() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('btn-status').addEventListener('click', readSot);
   document.getElementById('btn-learn').addEventListener('click', runLearning);
   document.getElementById('btn-import').addEventListener('click', importCardex);
   document.getElementById('btn-cluster').addEventListener('click', runClustering);
   document.getElementById('btn-refresh-clusters').addEventListener('click', loadClusters);
+
+  document.querySelectorAll('[data-file-target]').forEach(button => {
+    button.addEventListener('click', () => {
+      const targetId = button.getAttribute('data-file-target');
+      const purpose = button.getAttribute('data-file-type') || 'any';
+      chooseFileForInput(targetId, purpose);
+    });
+  });
 });

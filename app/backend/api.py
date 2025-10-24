@@ -1,5 +1,7 @@
-import json, traceback
+import traceback
 from typing import Any, Dict
+
+import webview
 
 from app.backend.audit import log_action
 from app.backend.db import connect, init_db, now_utc
@@ -9,20 +11,53 @@ from app.backend.clustering import propose_clusters
 from app.backend.text_norm import normalize_name
 from app.backend.domain_rules import prohibitions as load_prohibitions
 
-SOT_INDEX = "docs/en/codex/architecture/app-status-index.json"
-SOT_TEXT = "docs/en/codex/architecture/app-status2gpt.md"
 
 class ExposedAPI:
-    # SoT
-    def read_sot(self) -> Dict[str, Any]:
+    def __init__(self) -> None:
+        self._window: webview.Window | None = None
+
+    def attach_window(self, window: webview.Window) -> None:
+        self._window = window
+
+    # Dialogs
+    def choose_file(self, options: Dict[str, Any] | None = None) -> Dict[str, Any]:
+        if self._window is None:
+            return {"ok": False, "error": "Janela não inicializada."}
+
+        filters_raw = []
+        if options:
+            filters_raw = options.get("filters") or []
+
+        file_types = []
+        for item in filters_raw:
+            if not isinstance(item, dict):
+                continue
+            description = item.get("description") or "Ficheiros"
+            extensions = item.get("extensions") or []
+            pattern: str | None = None
+            if isinstance(extensions, str):
+                pattern = extensions
+            elif isinstance(extensions, list):
+                parts: list[str] = [part for part in extensions if isinstance(part, str) and part]
+                if parts:
+                    pattern = ";".join(parts)
+            if not pattern:
+                pattern = "*"
+            file_types.append((description, pattern))
+
         try:
-            with open(SOT_INDEX, "r") as f:
-                idx = json.load(f)
-            with open(SOT_TEXT, "r") as f:
-                txt = f.read()
-            return {"index": idx, "text_len": len(txt), "text_preview": txt[:4000]}
-        except Exception as e:
-            return {"error": str(e)}
+            result = self._window.create_file_dialog(
+                webview.OPEN_DIALOG,
+                allow_multiple=False,
+                file_types=file_types or None,
+            )
+        except Exception as exc:  # pragma: no cover - GUI interaction
+            return {"ok": False, "error": str(exc)}
+
+        if not result:
+            return {"ok": True, "canceled": True, "path": None}
+
+        return {"ok": True, "canceled": False, "path": result[0]}
 
     # Learning
     def learning_import(self, xlsx_path: str, scope: str = "global") -> Dict[str, Any]:

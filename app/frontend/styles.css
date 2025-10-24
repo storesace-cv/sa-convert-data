@@ -8,6 +8,12 @@ button:hover { filter: brightness(1.05); }
 button:disabled { opacity: 0.6; cursor: not-allowed; filter: none; }
 pre { background: #0b1220; border: 1px solid #223; border-radius: 8px; padding: 12px; overflow: auto; max-height: 280px; }
 .row { display: grid; grid-template-columns: 100px 1fr; gap: 8px; align-items: center; margin: 8px 0; }
+.row.file-row { align-items: stretch; }
+input { background: #0f1621; color: #e8eef5; border: 1px solid #1d2a3c; border-radius: 6px; padding: 8px 10px; }
+input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 1px rgba(59, 130, 246, 0.35); }
+.file-input { display: flex; gap: 8px; align-items: center; }
+.file-input input { flex: 1; }
+.file-input button { white-space: nowrap; }
 label { color: #9fb3c8; }
 code { background: #0b1220; padding: 2px 6px; border-radius: 6px; }
 .card-wide { grid-column: 1 / -1; }
@@ -50,4 +56,6 @@ select:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 1px rgba(
 
 @media (max-width: 640px) {
   .row { grid-template-columns: 1fr; }
+  .file-input { flex-direction: column; align-items: stretch; }
+  .file-input button { width: 100%; }
 }

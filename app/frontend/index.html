@@ -14,21 +14,18 @@
 
   <main>
     <section class="card">
-      <h2>Status</h2>
-      <button id="btn-status">Ler SoT</button>
-      <pre id="status"></pre>
-    </section>
-
-    <section class="card">
       <h2>Modo Aprendizagem</h2>
       <p>Importa <code>ingredientes - aprendizagem.xlsx</code> (sem exportar).</p>
       <div class="row">
         <label>Scope:</label>
         <input id="scope" value="global" />
       </div>
-      <div class="row">
+      <div class="row file-row">
         <label>Ficheiro:</label>
-        <input id="learn-path" placeholder="/caminho/ingredientes - aprendizagem.xlsx" />
+        <div class="file-input">
+          <input id="learn-path" placeholder="/caminho/ingredientes - aprendizagem.xlsx" />
+          <button type="button" class="secondary" data-file-target="learn-path" data-file-type="excel">Escolher…</button>
+        </div>
       </div>
       <button id="btn-learn">Executar aprendizagem</button>
       <pre id="learn-log"></pre>
@@ -40,9 +37,12 @@
         <label>Batch ID:</label>
         <input id="batch-id" placeholder="ex: 2024-07" />
       </div>
-      <div class="row">
+      <div class="row file-row">
         <label>Ficheiro:</label>
-        <input id="cardex-path" placeholder="/caminho/cardex.xlsx" />
+        <div class="file-input">
+          <input id="cardex-path" placeholder="/caminho/cardex.xlsx" />
+          <button type="button" class="secondary" data-file-target="cardex-path" data-file-type="excel">Escolher…</button>
+        </div>
       </div>
       <button id="btn-import">Importar</button>
       <pre id="import-log"></pre>
