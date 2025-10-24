@@ -9,14 +9,21 @@ rules:
 ---
 
 # Objetivo
-Criar/validar o schema SQLite para memória de decisões (sem IA externa).
+Criar/validar o schema SQLite para memória de decisões (sem IA externa) e disponibilizar o artefacto `.sql` aplicável no cliente.
 
 # Passos
 ```bash
 source .venv/bin/activate 2>/dev/null || true
-python -m tools.init_db
+python -m tools.init_db  # garante a criação local (opcional)
+```
+
+O schema pode ser aplicado manualmente em qualquer ambiente SQLite:
+
+```bash
+sqlite3 "$SA_CONVERT_DB" < databases/app/schema.sql
 ```
 
 # Pós-condições
-- Ficheiro `databases/app/data.db` criado (ou conforme var `SA_CONVERT_DB`).
+- Ficheiro `databases/app/schema.sql` sincronizado com o schema usado em produção.
+- Base de dados local criada/atualizada conforme necessário (via runner ou aplicação manual do schema).
 - SoT atualizado com entrada "110 — DB initialized".
