@@ -23,10 +23,11 @@
       "title": "Core Pipeline"
     },
     "3": {
-      "percent": 75,
+      "percent": 100,
       "tasks": {
-        "codex_docs": 50,
-        "progress_ledger": 100
+        "codex_docs": 100,
+        "progress_ledger": 100,
+        "export_validation": 100
       },
       "title": "Observability & Docs"
     },
@@ -49,5 +50,5 @@
     }
   },
   "schema": 1,
-  "updated_at": "2025-10-24T23:00:00Z"
+  "updated_at": "2025-10-25T00:30:00Z"
 }

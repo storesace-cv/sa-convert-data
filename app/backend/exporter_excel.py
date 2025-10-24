@@ -12,6 +12,7 @@ from app.backend.cardex_schema import CARDEX_FIELD_ORDER
 from app.backend.classification_rules import canonical_attrs
 from app.backend.db import connect, now_utc
 from app.config import EXPORT_DIR, ensure_dirs
+from app.backend.export_validation import validate_export_rows
 
 
 CLASSIFICATION_KEYS: tuple[str, ...] = (
@@ -135,7 +136,7 @@ def export_excel_using_model(model_path: str, out_path: str | None, batch_id: st
                 ts=export_ts,
             )
 
-        row_index = 3
+        prepared_rows: list[dict[str, Any]] = []
         for record in approvals:
             row_values: dict[str, Any] = {key: record.get(key) for key in CARDEX_FIELD_ORDER}
             canonical_label = record.get("canonical_label") or ""
@@ -157,19 +158,27 @@ def export_excel_using_model(model_path: str, out_path: str | None, batch_id: st
                 value = record.get(final_key) or row_values.get(unit_key)
                 row_values[unit_key] = value
 
-            if row_values.get("categoria") in (None, ""):
-                row_values["categoria"] = "Default"
-            if row_values.get("estado") in (None, ""):
-                row_values["estado"] = "ATIVO"
+            prepared_rows.append(row_values)
 
+        cleaned_rows, validation_metadata = validate_export_rows(prepared_rows)
+
+        row_index = 3
+        for cleaned in cleaned_rows:
             for col_index, key in enumerate(CARDEX_FIELD_ORDER, start=1):
-                ws.cell(row=row_index, column=col_index).value = row_values.get(key)
+                ws.cell(row=row_index, column=col_index).value = cleaned.get(key)
             row_index += 1
 
         if "_LOG" in wb.sheetnames:
             wb.remove(wb["_LOG"])
         log_ws = wb.create_sheet("_LOG")
         log_ws.append(["Chave", "Valor"])
+
+        validation_summary = {
+            "rounding_adjustments": len(validation_metadata.rounding_adjustments),
+            "invalid_monetary": len(validation_metadata.invalid_monetary),
+            "defaults_applied": len(validation_metadata.defaults_applied),
+            "missing_columns": sum(validation_metadata.missing_columns.values()),
+        }
 
         log_entries = [
             ("batch_id", batch_id),
@@ -183,6 +192,10 @@ def export_excel_using_model(model_path: str, out_path: str | None, batch_id: st
             ("clusters_suggested", clusters_total),
             ("clusters_approved", approvals_total),
             ("items_excluded", excluded_items),
+            ("validation_rounding_adjustments", validation_summary["rounding_adjustments"]),
+            ("validation_invalid_monetary", validation_summary["invalid_monetary"]),
+            ("validation_defaults_applied", validation_summary["defaults_applied"]),
+            ("validation_missing_columns", validation_summary["missing_columns"]),
         ]
 
         for key, value in log_entries:
@@ -192,4 +205,10 @@ def export_excel_using_model(model_path: str, out_path: str | None, batch_id: st
     finally:
         conn.close()
 
-    return {"ok": True, "rows": approvals_total, "out": out_path}
+    return {
+        "ok": True,
+        "rows": approvals_total,
+        "out": out_path,
+        "cleaned_rows": cleaned_rows,
+        "validation": validation_metadata.as_dict(),
+    }
