@@ -155,6 +155,33 @@ async function runLearning() {
   }
 }
 
+async function forgetLearning() {
+  const scope = getCurrentScope();
+  const confirmed = window.confirm(
+    `Isto vai apagar todos os registos de aprendizagem no scope "${scope}". Continuar?`
+  );
+  if (!confirmed) {
+    return;
+  }
+
+  const output = document.getElementById('learn-log');
+  const button = document.getElementById('btn-forget-learning');
+  output.textContent = 'A limpar aprendizagem...';
+  if (button) {
+    button.disabled = true;
+  }
+  try {
+    const result = await window.pywebview.api.forget_learning(scope);
+    output.textContent = stringifyResult(result);
+  } catch (e) {
+    output.textContent = 'Erro: ' + e;
+  } finally {
+    if (button) {
+      button.disabled = false;
+    }
+  }
+}
+
 async function chooseFileForInput(targetId, purpose) {
   const input = document.getElementById(targetId);
   if (!input) {
@@ -523,6 +550,7 @@ async function loadClusters() {
 
 document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btn-learn').addEventListener('click', runLearning);
+  document.getElementById('btn-forget-learning').addEventListener('click', forgetLearning);
   document.getElementById('btn-import').addEventListener('click', importCardex);
   document.getElementById('btn-cluster').addEventListener('click', runClustering);
   document.getElementById('btn-refresh-clusters').addEventListener('click', loadClusters);

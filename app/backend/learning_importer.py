@@ -291,3 +291,76 @@ def learn_from_xlsx(xlsx_path: str, scope: str = "global") -> Dict[str, Any]:
         "group_pattern_updates": group_pattern_updates,
         "logs_recorded": logs_recorded,
     }
+
+
+def forget_learning(scope: str = "global") -> Dict[str, Any]:
+    init_db()
+    conn = connect()
+
+    with conn:
+        def _deleted(cur: sqlite3.Cursor) -> int:
+            return cur.rowcount if cur.rowcount and cur.rowcount > 0 else 0
+
+        synonyms_deleted = _deleted(
+            conn.execute(
+                "DELETE FROM canonical_synonym WHERE scope=? AND source='learning_file'",
+                (scope,),
+            )
+        )
+
+        class_map_deleted = _deleted(
+            conn.execute(
+                "DELETE FROM class_map WHERE scope=? AND source='learning_file'",
+                (scope,),
+            )
+        )
+
+        group_patterns_deleted = _deleted(
+            conn.execute(
+                "DELETE FROM group_pattern WHERE scope=? AND source='learning_file'",
+                (scope,),
+            )
+        )
+
+        logs_deleted = _deleted(
+            conn.execute(
+                "DELETE FROM decision_log WHERE scope=? AND action='learning_upsert'",
+                (scope,),
+            )
+        )
+
+        canonical_items_deleted = _deleted(
+            conn.execute(
+                """
+                DELETE FROM canonical_item
+                WHERE scope=?
+                  AND NOT EXISTS (
+                      SELECT 1 FROM canonical_synonym cs WHERE cs.canonical_id=canonical_item.id
+                  )
+                  AND NOT EXISTS (
+                      SELECT 1 FROM group_pattern gp WHERE gp.canonical_id=canonical_item.id
+                  )
+                  AND NOT EXISTS (
+                      SELECT 1 FROM approval_decision ad WHERE ad.canonical_id=canonical_item.id
+                  )
+                """,
+                (scope,),
+            )
+        )
+
+        payload = {
+            "synonyms_deleted": synonyms_deleted,
+            "class_map_deleted": class_map_deleted,
+            "group_patterns_deleted": group_patterns_deleted,
+            "canonical_items_deleted": canonical_items_deleted,
+            "logs_deleted": logs_deleted,
+        }
+
+        action_id = log_action(conn, scope, "learning_forget", payload)
+
+    return {
+        "ok": True,
+        "scope": scope,
+        **payload,
+        "action_id": action_id,
+    }

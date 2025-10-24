@@ -95,3 +95,42 @@ def test_learning_importer_populates_knowledge(tmp_path, monkeypatch):
         assert cur.fetchone()[0] == 1
     finally:
         conn.close()
+
+
+def test_forget_learning_removes_scope_data(tmp_path, monkeypatch):
+    db_path = tmp_path / "learning.db"
+    monkeypatch.setenv("SA_CONVERT_DB", str(db_path))
+
+    import app.backend.db as db_module
+    import app.backend.learning_importer as importer
+
+    importlib.reload(db_module)
+    importlib.reload(importer)
+
+    xlsx_path = tmp_path / "learning.xlsx"
+    _prepare_workbook(xlsx_path)
+
+    importer.learn_from_xlsx(str(xlsx_path), scope="global")
+
+    result = importer.forget_learning(scope="global")
+
+    assert result["ok"] is True
+    assert result["synonyms_deleted"] >= 1
+    assert result["group_patterns_deleted"] == 1
+    assert result["class_map_deleted"] == 1
+    assert result["canonical_items_deleted"] >= 1
+    assert result["logs_deleted"] == 1
+    assert result["action_id"] > 0
+
+    conn = db_module.connect()
+    try:
+        assert conn.execute("SELECT COUNT(*) FROM canonical_synonym").fetchone()[0] == 0
+        assert conn.execute("SELECT COUNT(*) FROM group_pattern").fetchone()[0] == 0
+        assert conn.execute("SELECT COUNT(*) FROM class_map").fetchone()[0] == 0
+        assert conn.execute("SELECT COUNT(*) FROM canonical_item").fetchone()[0] == 0
+
+        cur = conn.execute("SELECT action FROM decision_log")
+        rows = [row[0] for row in cur.fetchall()]
+        assert rows == ["learning_forget"]
+    finally:
+        conn.close()
