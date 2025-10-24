@@ -1,0 +1,54 @@
+{
+  "schema": 1,
+  "updated_at": "NOW",
+  "phases": {
+    "1": {
+      "title": "Foundation",
+      "percent": 80,
+      "tasks": {
+        "repo_initialized": 100,
+        "venv_present": 100,
+        "launcher_present": 100,
+        "sot_bootstrap": 100,
+        "ci_smoke": 0
+      }
+    },
+    "2": {
+      "title": "Core Pipeline",
+      "percent": 48,
+      "tasks": {
+        "normalization": 50,
+        "classification_rules": 50,
+        "dedup_across_stores": 30,
+        "export_excel": 30,
+        "unit_tests": 80
+      }
+    },
+    "3": {
+      "title": "Observability & Docs",
+      "percent": 75,
+      "tasks": {
+        "codex_docs": 50,
+        "progress_ledger": 100
+      }
+    },
+    "4": {
+      "title": "Integrations & QA",
+      "percent": 10,
+      "tasks": {
+        "db_migrate_init": 20,
+        "ci_coverage_targets": 0
+      }
+    },
+    "5": {
+      "title": "Release & Ops",
+      "percent": 0,
+      "tasks": {
+        "packaging": 0,
+        "one_click_runner": 0
+        ,
+        "runbooks": 0
+      }
+    }
+  }
+}
