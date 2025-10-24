@@ -14,9 +14,9 @@ Criar/validar o schema SQLite para memória de decisões (sem IA externa).
 # Passos
 ```bash
 source .venv/bin/activate 2>/dev/null || true
-python tools/init_db.py
+python -m tools.init_db
 ```
 
 # Pós-condições
-- Ficheiro `data.sqlite` criado na raiz do repo (ou conforme var `SA_CONVERT_DB`).
+- Ficheiro `databases/app/data.db` criado (ou conforme var `SA_CONVERT_DB`).
 - SoT atualizado com entrada "110 — DB initialized".

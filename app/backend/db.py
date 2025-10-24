@@ -1,7 +1,26 @@
 import os, sqlite3, datetime
+from pathlib import Path
 from app.config import DB_DIR, ensure_dirs
+
 ensure_dirs()
-DB_PATH = os.environ.get("SA_CONVERT_DB", str(DB_DIR / "data.sqlite"))
+
+def _default_db_path() -> str:
+  env_path = os.environ.get("SA_CONVERT_DB")
+  if env_path:
+    return env_path
+
+  preferred = Path(DB_DIR) / "data.db"
+  legacy = Path(DB_DIR) / "data.sqlite"
+
+  if preferred.exists():
+    return str(preferred)
+
+  if legacy.exists():
+    return str(legacy)
+
+  return str(preferred)
+
+DB_PATH = _default_db_path()
 SCHEMA_SQL = """
 PRAGMA journal_mode=WAL;
 CREATE TABLE IF NOT EXISTS canonical_item (id INTEGER PRIMARY KEY AUTOINCREMENT, name_canonico TEXT NOT NULL, scope TEXT DEFAULT 'global', rule_version TEXT DEFAULT 'v1', created_at TEXT NOT NULL);

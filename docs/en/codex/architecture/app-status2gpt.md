@@ -31,5 +31,5 @@ Every Codex runner **MUST** append a changelog entry.
 
 ## Change @ 2025-10-24T00:57:09Z
 - Runner: 110 — DB initialized
-- Changed: data.sqlite (created), tools/init_db.py (exec)
+- Changed: databases/app/data.db (created), tools/init_db.py (exec)
 - Summary: Schema criado/validado (memória de decisões).
