@@ -3,6 +3,7 @@ from typing import Any, Dict, Iterable, List, Sequence
 
 from openpyxl import load_workbook
 
+from app.backend.audit import current_user, log_action
 from app.backend.cardex_schema import (
     CARDEX_FIELD_ORDER,
     CARDEX_IMPORT_COLUMNS,
@@ -187,6 +188,19 @@ def import_cardex_reformulado(xlsx_path: str | None, batch_id: str) -> Dict[str,
           working_values,
         )
         w_inserted += 1
+
+      log_action(
+        conn,
+        f"batch:{batch_id}",
+        "cardex_import",
+        {
+          "batch_id": batch_id,
+          "file": xlsx_path,
+          "imported_rows": inserted,
+          "working_rows": w_inserted,
+          "user": current_user(),
+        },
+      )
 
   finally:
     wb.close()
