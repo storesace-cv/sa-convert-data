@@ -1,16 +1,16 @@
 {
   "schema": 1,
-  "updated_at": "2025-10-24T21:18:42.333765Z",
+  "updated_at": "2025-10-24T21:35:12.732444Z",
   "phases": {
     "1": {
       "title": "Foundation",
-      "percent": 80,
+      "percent": 100,
       "tasks": {
         "repo_initialized": 100,
         "venv_present": 100,
         "launcher_present": 100,
         "sot_bootstrap": 100,
-        "ci_smoke": 0
+        "ci_smoke": 100
       }
     },
     "2": {
