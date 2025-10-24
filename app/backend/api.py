@@ -7,6 +7,7 @@ from app.backend.learning_importer import learn_from_xlsx
 from app.backend.importer_cardex import import_cardex_reformulado
 from app.backend.clustering import propose_clusters
 from app.backend.text_norm import normalize_name
+from app.backend.domain_rules import prohibitions as load_prohibitions
 
 SOT_INDEX = "docs/en/codex/architecture/app-status-index.json"
 SOT_TEXT = "docs/en/codex/architecture/app-status2gpt.md"
@@ -53,21 +54,141 @@ class ExposedAPI:
             return {"ok": False, "error": str(e)}
 
     # Review list
-    def list_clusters(self, batch_id: str) -> Dict[str, Any]:
+    def list_clusters(self, batch_id: str, scope: str = "global") -> Dict[str, Any]:
         try:
             conn = connect()
-            cur = conn.execute("SELECT id, label_sugerido FROM cluster_proposal WHERE batch_id=?", (batch_id,))
-            items = []
-            for cid, lbl in cur.fetchall():
-                cm = conn.execute("""SELECT cm.working_id, cm.score, cm.selected_by_user, ir.nome
-                                      FROM cluster_member cm
-                                      JOIN working_article wa ON wa.id=cm.working_id
-                                      JOIN imported_raw ir ON ir.id=wa.raw_id
-                                      WHERE cm.cluster_id=?
-                                  """, (cid,)).fetchall()
-                members = [{"id": wid, "score": float(sc or 0), "selected": bool(sel), "nome": nome} for (wid, sc, sel, nome) in cm]
-                items.append({"id": cid, "label": lbl, "members": members})
-            return {"ok": True, "items": items}
+            try:
+                cur = conn.execute(
+                    "SELECT id, label_sugerido FROM cluster_proposal WHERE batch_id=?",
+                    (batch_id,),
+                )
+                items: list[dict[str, Any]] = []
+                prohibition_rules = [list(rule) for rule in load_prohibitions(scope or "global")]
+
+                for cid, lbl in cur.fetchall():
+                    rows = conn.execute(
+                        """
+                        SELECT
+                            cm.working_id,
+                            cm.score,
+                            cm.selected_by_user,
+                            ir.nome,
+                            wa.quantidade_valor,
+                            wa.quantidade_total,
+                            wa.quantidade_unidade,
+                            wa.quantidade_tipo,
+                            wa.quantidade_numero,
+                            wa.flag_com_sal,
+                            wa.flag_sem_sal,
+                            wa.marca_detectada,
+                            COALESCE(wa.nome_sem_stop, wa.nome_norm, ''),
+                            ir.unid_default,
+                            ir.unid_compra,
+                            ir.unid_stock,
+                            ir.unid_log
+                        FROM cluster_member cm
+                        JOIN working_article wa ON wa.id=cm.working_id
+                        JOIN imported_raw ir ON ir.id=wa.raw_id
+                        WHERE cm.cluster_id=?
+                        """,
+                        (cid,),
+                    ).fetchall()
+
+                    members: list[dict[str, Any]] = []
+                    for row in rows:
+                        wid = row[0]
+                        score = float(row[1] or 0.0)
+                        selected = bool(row[2])
+                        nome = row[3]
+                        quantidade = {
+                            "valor": row[4],
+                            "total": row[5],
+                            "unidade": row[6],
+                            "tipo": row[7],
+                            "numero": row[8],
+                        }
+                        flag_com_sal = bool(row[9])
+                        flag_sem_sal = bool(row[10])
+                        marca = row[11] or None
+                        nome_tokens = (row[12] or "").strip().upper()
+                        tokens_set: set[str] = set()
+                        if flag_com_sal:
+                            tokens_set.add("COM SAL")
+                        if flag_sem_sal:
+                            tokens_set.add("SEM SAL")
+                        if marca:
+                            tokens_set.add(str(marca).strip().upper())
+                        if nome_tokens:
+                            tokens_set.add(nome_tokens)
+                            tokens_set.update(tok for tok in nome_tokens.split() if tok)
+
+                        member_data = {
+                            "id": wid,
+                            "score": score,
+                            "selected": selected,
+                            "nome": nome,
+                            "quantidade": quantidade,
+                            "flags": [
+                                label
+                                for label, present in (
+                                    ("COM SAL", flag_com_sal),
+                                    ("SEM SAL", flag_sem_sal),
+                                )
+                                if present
+                            ],
+                            "marca": marca,
+                            "blocking_tokens": sorted(tokens_set),
+                            "units": {
+                                "unit_default": row[13] or None,
+                                "unit_compra": row[14] or None,
+                                "unit_stock": row[15] or None,
+                                "unit_log": row[16] or None,
+                            },
+                        }
+                        members.append(member_data)
+
+                    unit_keys = ("unit_default", "unit_compra", "unit_stock", "unit_log")
+                    unit_options: dict[str, list[str]] = {}
+                    suggested_units: dict[str, str | None] = {}
+
+                    if members:
+                        sorted_members = sorted(
+                            members,
+                            key=lambda m: (not m["selected"], -m["score"]),
+                        )
+                        for key in unit_keys:
+                            seen: set[str] = set()
+                            for member in members:
+                                value = member["units"].get(key)
+                                if value and value not in seen:
+                                    seen.add(value)
+                            unit_options[key] = sorted(seen)
+
+                            suggestion = None
+                            for candidate in sorted_members:
+                                value = candidate["units"].get(key)
+                                if value:
+                                    suggestion = value
+                                    break
+                            suggested_units[key] = suggestion
+
+                    items.append(
+                        {
+                            "id": cid,
+                            "label": lbl,
+                            "members": members,
+                            "unit_options": unit_options,
+                            "suggested_units": suggested_units,
+                        }
+                    )
+
+                return {
+                    "ok": True,
+                    "items": items,
+                    "prohibitions": prohibition_rules,
+                }
+            finally:
+                conn.close()
         except Exception as e:
             return {"ok": False, "error": str(e)}
 
@@ -82,9 +203,56 @@ class ExposedAPI:
             return {"ok": False, "error": str(e)}
 
     # Approve cluster
-    def approve_cluster(self, cluster_id: int, scope: str = "global") -> Dict[str, Any]:
+    def approve_cluster(
+        self,
+        cluster_id: int,
+        scope: str = "global",
+        units: Dict[str, Any] | None = None,
+    ) -> Dict[str, Any]:
+        conn = connect()
         try:
-            conn = connect()
+            selected_rows = conn.execute(
+                """
+                SELECT
+                    wa.flag_com_sal,
+                    wa.flag_sem_sal,
+                    wa.marca_detectada,
+                    COALESCE(wa.nome_sem_stop, wa.nome_norm, '')
+                FROM cluster_member cm
+                JOIN working_article wa ON wa.id=cm.working_id
+                WHERE cm.cluster_id=? AND cm.selected_by_user=1
+                """,
+                (cluster_id,),
+            ).fetchall()
+
+            if not selected_rows:
+                return {"ok": False, "error": "Sem membros selecionados"}
+
+            active_tokens: set[str] = set()
+            for flag_com, flag_sem, marca, nome_norm in selected_rows:
+                if flag_com:
+                    active_tokens.add("COM SAL")
+                if flag_sem:
+                    active_tokens.add("SEM SAL")
+                if marca:
+                    active_tokens.add(str(marca).strip().upper())
+                norm_text = (nome_norm or "").strip().upper()
+                if norm_text:
+                    active_tokens.add(norm_text)
+                    active_tokens.update(tok for tok in norm_text.split() if tok)
+
+            violations: list[list[str]] = []
+            for rule in load_prohibitions(scope or "global"):
+                if all(token in active_tokens for token in rule):
+                    violations.append(list(rule))
+
+            if violations:
+                readable = ", ".join(" + ".join(rule) for rule in violations)
+                return {
+                    "ok": False,
+                    "error": f"Regras de bloqueio violadas: {readable}",
+                }
+
             row = conn.execute(
                 """
                 SELECT ir.id, ir.unid_default, ir.unid_compra, ir.unid_stock, ir.unid_log, ir.nome
@@ -150,6 +318,11 @@ class ExposedAPI:
                 if row_label:
                     canonical_label = row_label[0]
 
+            normalized_units = {
+                key: (units or {}).get(key)
+                for key in ("unit_default", "unit_compra", "unit_stock", "unit_log")
+            }
+
             with conn:
                 if canonical_id is None:
                     canonical_label = canonical_label or f"{nome} (m)"
@@ -164,10 +337,10 @@ class ExposedAPI:
                 else:
                     canonical_label = canonical_label or f"{nome} (m)"
 
-                final_ud = ud or pattern_units.get("unit_default")
-                final_uc = uc or pattern_units.get("unit_compra")
-                final_us = us or pattern_units.get("unit_stock")
-                final_ul = ul or pattern_units.get("unit_log")
+                final_ud = normalized_units.get("unit_default") or ud or pattern_units.get("unit_default")
+                final_uc = normalized_units.get("unit_compra") or uc or pattern_units.get("unit_compra")
+                final_us = normalized_units.get("unit_stock") or us or pattern_units.get("unit_stock")
+                final_ul = normalized_units.get("unit_log") or ul or pattern_units.get("unit_log")
 
                 conn.execute(
                     """
@@ -198,9 +371,85 @@ class ExposedAPI:
                         "canonical_label": canonical_label,
                         "term_norm": term_norm,
                         "base_hint": base_hint,
+                        "units": {
+                            "unit_default": final_ud,
+                            "unit_compra": final_uc,
+                            "unit_stock": final_us,
+                            "unit_log": final_ul,
+                        },
                     },
                 )
 
-            return {"ok": True, "cluster_id": cluster_id, "canonical_id": canonical_id}
+            return {
+                "ok": True,
+                "cluster_id": cluster_id,
+                "canonical_id": canonical_id,
+                "canonical_label": canonical_label,
+            }
+        except Exception as e:
+            return {"ok": False, "error": str(e)}
+        finally:
+            conn.close()
+
+    def set_cluster_selection(self, cluster_id: int, selected: bool) -> Dict[str, Any]:
+        try:
+            conn = connect()
+            with conn:
+                conn.execute(
+                    "UPDATE cluster_member SET selected_by_user=? WHERE cluster_id=?",
+                    (1 if selected else 0, cluster_id),
+                )
+            return {"ok": True}
+        except Exception as e:
+            return {"ok": False, "error": str(e)}
+
+    def split_cluster(self, cluster_id: int, member_ids: list[int]) -> Dict[str, Any]:
+        try:
+            if not member_ids:
+                return {"ok": False, "error": "Seleciona ao menos um membro para dividir"}
+
+            conn = connect()
+            try:
+                cluster_row = conn.execute(
+                    "SELECT batch_id, label_sugerido FROM cluster_proposal WHERE id=?",
+                    (cluster_id,),
+                ).fetchone()
+                if not cluster_row:
+                    return {"ok": False, "error": "Cluster inexistente"}
+
+                batch_id, label = cluster_row
+                rows = conn.execute(
+                    "SELECT working_id FROM cluster_member WHERE cluster_id=?",
+                    (cluster_id,),
+                ).fetchall()
+                all_ids = {row[0] for row in rows}
+                move_ids = {mid for mid in member_ids if mid in all_ids}
+                if not move_ids:
+                    return {"ok": False, "error": "IDs selecionados inválidos"}
+                if len(move_ids) == len(all_ids):
+                    return {"ok": False, "error": "Não é possível dividir com todos os membros"}
+
+                placeholders = ",".join("?" for _ in move_ids)
+                with conn:
+                    cur = conn.execute(
+                        """
+                        INSERT INTO cluster_proposal(batch_id, label_sugerido, created_at)
+                        VALUES(?,?,?)
+                        """,
+                        (batch_id, f"{label} (dividido)", now_utc()),
+                    )
+                    new_id = cur.lastrowid
+                    conn.execute(
+                        f"UPDATE cluster_member SET cluster_id=? WHERE cluster_id=? AND working_id IN ({placeholders})",
+                        (new_id, cluster_id, *move_ids),
+                    )
+
+                return {
+                    "ok": True,
+                    "new_cluster_id": new_id,
+                    "moved": len(move_ids),
+                }
+            finally:
+                conn.close()
         except Exception as e:
             return {"ok": False, "error": str(e)}
