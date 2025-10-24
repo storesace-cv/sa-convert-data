@@ -30,14 +30,24 @@ The application status and changelog are managed under:
 - `docs/en/codex/architecture/app-status-index.json`  
 - `docs/en/codex/architecture/app-status2gpt.md`
 
-### Current SoT State (as of 2025-10-24T18:48:34Z)
+### Current SoT State (as of 2025-10-24T18:50:44Z)
+
+Tabela abaixo destaca as 12 entradas mais recentes registradas no SoT.
 
 | Runner | Description | Summary | Date |
 |---------|--------------|----------|------|
-| 001 | Branch setup (HTTPS) | Configured origin and personal branch. | 2025-10-24 |
-| 020 | Start environment | Created `.venv`, installed dependencies. | 2025-10-24 |
-| 100 | Scaffold application | Generated app skeleton, DB, learning mode. | 2025-10-24 |
-| 110 | DB initialized | Created `data.db`, validated schema. | 2025-10-24 |
+| Docs | Roadmap | Adicionado roadmap detalhado com etapas planeadas. | 2025-10-24 |
+| Docs | README refresh | Atualizado README com documentação abrangente do projecto. | 2025-10-24 |
+| Merge PR #12 | Scoped forgetting | Mesclada funcionalidade de esquecimento segmentado. | 2025-10-24 |
+| Forget learning per scope | — | Permite limpar dados de aprendizagem por escopo com suporte de UI e testes. | 2025-10-24 |
+| Merge PR #11 | File picker | Mesclada melhoria de seleção de ficheiros com ajustes no frontend/backend. | 2025-10-24 |
+| Native file picker | — | Inseridos pickers nativos para seleção de ficheiros e removido leitor SoT. | 2025-10-24 |
+| Merge PR #10 | Launcher | Mesclado script de bootstrap do ambiente e execução da GUI. | 2025-10-24 |
+| Launcher bootstrap | — | Adicionado script para preparar ambiente e lançar a GUI automaticamente. | 2025-10-24 |
+| Merge PR #9 | Export logging | Mescladas melhorias de exportação com telemetria. | 2025-10-24 |
+| Export | Logging coverage | Cobertura do export Excel ampliada com logging adicional. | 2025-10-24 |
+| Merge PR #8 | Review UI | Mesclado reforço de validações e UI de revisão de clusters. | 2025-10-24 |
+| Review UI & validation | — | Validações reforçadas e UI de revisão de clusters aprimorada. | 2025-10-24 |
 
 ---
 
