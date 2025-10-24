@@ -5,7 +5,7 @@ import webview
 
 from app.backend.audit import log_action
 from app.backend.db import connect, init_db, now_utc
-from app.backend.learning_importer import learn_from_xlsx
+from app.backend.learning_importer import learn_from_xlsx, forget_learning as forget_learning_scope
 from app.backend.importer_cardex import import_cardex_reformulado
 from app.backend.clustering import propose_clusters
 from app.backend.text_norm import normalize_name
@@ -65,6 +65,13 @@ class ExposedAPI:
             init_db()
             result = learn_from_xlsx(xlsx_path, scope)
             return result
+        except Exception as e:
+            return {"ok": False, "error": str(e), "trace": traceback.format_exc()}
+
+    def forget_learning(self, scope: str = "global") -> Dict[str, Any]:
+        try:
+            init_db()
+            return forget_learning_scope(scope)
         except Exception as e:
             return {"ok": False, "error": str(e), "trace": traceback.format_exc()}
 

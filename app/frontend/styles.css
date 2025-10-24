@@ -5,6 +5,10 @@ main { padding: 20px; display: grid; grid-template-columns: repeat(auto-fit, min
 .card { background: #0f1621; border: 1px solid #223; border-radius: 12px; padding: 16px; }
 button { background: #3b82f6; color: #fff; border: 0; padding: 10px 14px; border-radius: 8px; cursor: pointer; }
 button:hover { filter: brightness(1.05); }
+button.secondary { background: #1f2937; color: #cbd5f5; }
+button.secondary:hover { filter: brightness(1.1); }
+button.danger { background: #ef4444; color: #fff; }
+button.danger:hover { filter: brightness(1.05); }
 button:disabled { opacity: 0.6; cursor: not-allowed; filter: none; }
 pre { background: #0b1220; border: 1px solid #223; border-radius: 8px; padding: 12px; overflow: auto; max-height: 280px; }
 .row { display: grid; grid-template-columns: 100px 1fr; gap: 8px; align-items: center; margin: 8px 0; }
@@ -14,6 +18,7 @@ input:focus { outline: none; border-color: #3b82f6; box-shadow: 0 0 0 1px rgba(5
 .file-input { display: flex; gap: 8px; align-items: center; }
 .file-input input { flex: 1; }
 .file-input button { white-space: nowrap; }
+.button-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
 label { color: #9fb3c8; }
 code { background: #0b1220; padding: 2px 6px; border-radius: 6px; }
 .card-wide { grid-column: 1 / -1; }
@@ -36,10 +41,6 @@ code { background: #0b1220; padding: 2px 6px; border-radius: 6px; }
 .confidence-medium { background: rgba(250, 204, 21, 0.2); color: #facc15; }
 .confidence-low { background: rgba(239, 68, 68, 0.25); color: #fca5a5; }
 .cluster-actions { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
-.cluster-actions .secondary { background: #1f2937; color: #cbd5f5; }
-.cluster-actions .secondary:hover { filter: brightness(1.1); }
-.cluster-actions .danger { background: #ef4444; color: #fff; }
-.cluster-actions .danger:hover { filter: brightness(1.05); }
 .unit-section { margin-top: 12px; background: #0b1220; border: 1px solid #1d2a3c; border-radius: 8px; padding: 10px 12px; display: flex; flex-direction: column; gap: 10px; }
 .unit-title { font-size: 13px; font-weight: 600; color: #9fb3c8; }
 .unit-grid { display: grid; gap: 8px; }
