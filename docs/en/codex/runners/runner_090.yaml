@@ -1,0 +1,13 @@
+title: "090 — Retro Mark Smart-Mode bootstrap"
+audience: "Codex executor"
+rules:
+  - "Idempotent."
+goals:
+  - "Mark SoT bootstrap and progress ledger as 100% when present."
+on_success:
+  progress:
+    phase: 1
+    tasks:
+      sot_bootstrap: 100
+    phase_extra:
+      "3.progress_ledger": 100

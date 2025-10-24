@@ -1,25 +1,22 @@
 {
   "version": 1,
-  "generated_at": "2025-10-24T20:55:23.798628Z",
+  "generated_at": "2025-10-24T20:57:30.699442Z",
   "sources": {
-    "text": "docs/en/codex/architecture/app-status2gpt.md",
-    "progress": "docs/en/codex/progress.json",
-    "runners_dir": "docs/en/codex/runners"
+    "text": "/Users/jorgepeixinho/Documents/NetxCloud/projectos/bwb/desenvolvimento/sa-convert-data/docs/en/codex/architecture/app-status2gpt.md",
+    "progress": "/Users/jorgepeixinho/Documents/NetxCloud/projectos/bwb/desenvolvimento/sa-convert-data/docs/en/codex/progress.json",
+    "runners_dir": "/Users/jorgepeixinho/Documents/NetxCloud/projectos/bwb/desenvolvimento/sa-convert-data/docs/en/codex/runners"
   },
   "signals": {
     "backend": [
       "app",
       "main.py"
     ],
-    "frontend": [],
     "tests": [
       "tests"
     ],
-    "ci": [],
     "docs": [
       "docs"
     ],
-    "scripts": [],
     "data": [
       "databases"
     ],
@@ -35,7 +32,7 @@
     ],
     "venv": [
       ".venv"
-    ]
-  },
-  "notes": "Regenerate with scripts/codex/detect_state.py --write"
+    ],
+    "ci": []
+  }
 }
