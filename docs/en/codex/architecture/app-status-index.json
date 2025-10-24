@@ -1,0 +1,18 @@
+{
+  "sot_files": {
+    "index": "docs/en/codex/architecture/app-status-index.json",
+    "text": "docs/en/codex/architecture/app-status2gpt.md"
+  },
+  "artifacts": {
+    "mode": "pywebview-direct",
+    "last_update": "2025-10-24T00:17:25Z",
+    "repo_remote": "git@github.com:storesace-cv/sa-convert-data.git",
+    "branch_user": "my-sa-convert-data"
+  },
+  "rules": [
+    "ALWAYS update app-status2gpt.md after running any codex runner.",
+    "Keep actions idempotent.",
+    "Paths are repo-root relative.",
+    "Never change the 2-line header of the export model."
+  ]
+}
