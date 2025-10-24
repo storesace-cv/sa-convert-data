@@ -1,0 +1,13 @@
+title: "105 — CI Smoke (GitHub Actions)"
+audience: "Codex executor"
+rules:
+  - "Idempotent."
+goals:
+  - "Ensure minimal CI runs on push/PR with lint/tests if available."
+signals:
+  - "ci:ok"
+on_success:
+  progress:
+    phase: 1
+    tasks:
+      ci_smoke: 100

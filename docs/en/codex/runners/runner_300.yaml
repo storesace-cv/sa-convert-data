@@ -1,0 +1,13 @@
+title: "300 — Normalize Inputs"
+audience: "Codex executor"
+rules:
+  - "Idempotent."
+goals:
+  - "Normalize raw datasets from `databases/` into a canonical schema."
+signals:
+  - "data.normalized:ok"
+on_success:
+  progress:
+    phase: 2
+    tasks:
+      normalization: 100

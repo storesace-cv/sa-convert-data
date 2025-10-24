@@ -1,0 +1,14 @@
+title: "100 — Foundation — Repo & Launcher"
+audience: "Codex executor"
+rules:
+  - "Idempotent."
+goals:
+  - "Ensure launcher/start scripts present; SoT bootstrap committed."
+on_success:
+  progress:
+    phase: 1
+    tasks:
+      repo_initialized: 100
+      venv_present: 100
+      launcher_present: 100
+      sot_bootstrap: 100

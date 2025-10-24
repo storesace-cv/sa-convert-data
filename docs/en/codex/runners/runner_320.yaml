@@ -1,0 +1,12 @@
+title: "320 — Deduplication (≥85%) across all stores"
+audience: "Codex executor"
+rules:
+  - "Idempotent."
+  - "Cross-store matching."
+goals:
+  - "Identify duplicates with similarity >= 0.85; tag originals and duplicates per policy."
+on_success:
+  progress:
+    phase: 2
+    tasks:
+      dedup_across_stores: 100
