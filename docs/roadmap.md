@@ -28,6 +28,12 @@ goal: Initialize repo (origin/branch HTTPS, SSH, SoT sync)
 artifacts: .venv, .codex.env, start.sh
 status: completed
 idempotent: true
+progress_milestones:
+  - "Repository cloned with protected main branch."
+  - "SoT bootstrap linked to progress ledger."
+definition_of_done:
+  - "Codex environment variables validated via start.sh."
+  - "Initial SoT sync recorded in app-status2gpt.md."
 ```
 
 ---
@@ -43,6 +49,14 @@ details:
   - Detect duplicate records across multiple store datasets.
   - Normalize capitalization and accents.
   - Maintain memory of prior classification decisions.
+progress_milestones:
+  - "≥3 priority datasets deduplicated with collision report archived."
+  - "Normalization pipeline covers 100% of canonical text fields."
+  - "Decision history persisted for at least 2 consecutive learning runs."
+definition_of_done:
+  - "All ingestion scripts idempotent and logged in SoT."
+  - "Unit tests covering dedupe + normalization edge cases passing."
+  - "Baseline metrics (duplicate rate, normalization coverage) captured in progress.json."
 progress: 40
 status: in-progress
 expected_output:
@@ -64,6 +78,13 @@ goal: Apply semantic rules to determine article class ("COMPRA" / "COMPRA-VENDA"
 details:
   - Implement canonical_attrs.class_tag inference.
   - Generate field-level classification confidence metrics.
+progress_milestones:
+  - "Rule coverage ≥90% of known SKUs in staging dataset."
+  - "Confidence scoring calibrated against ≥2 labeled benchmarks."
+definition_of_done:
+  - "Classification runner produces deterministic output from same seed data."
+  - "Confidence metrics exported to rules/classification_rules.json metadata block."
+  - "Regression tests capture at least 5 representative misclassification scenarios."
 progress: 0
 status: pending
 expected_output:
@@ -85,6 +106,14 @@ details:
   - Validate structure consistency vs canonical schema.
   - Apply “half-up” rounding control.
   - Write clean export datasets for downstream systems.
+  - Stage lint + smoke-test workflow to run on export artifacts (pre-Phase 5).
+progress_milestones:
+  - "Validation suite covers 100% of canonical schema fields."
+  - "CI smoke workflow executes on every export commit (lint + schema check)."
+definition_of_done:
+  - "Half-up rounding verified via automated test matrix."
+  - "Exports reproducible with checksum logged in SoT."
+  - "Validation_report.json flags zero blocking issues across sample datasets."
 progress: 0
 status: pending
 expected_output:
@@ -106,6 +135,13 @@ details:
   - Implement visual progress indicators.
   - Add QA unit tests and dashboards.
   - Integrate ReportBro templates for PDF export.
+progress_milestones:
+  - "GUI displays live metrics from learning + classification runs."
+  - "Automated QA suite covers ≥80% of GUI-critical paths."
+definition_of_done:
+  - "Smoke UI test executed via QA automation after each release branch push."
+  - "ReportBro templates render without validation errors."
+  - "Accessibility checklist (contrast + keyboard navigation) signed off."
 progress: 0
 status: pending
 expected_output:
@@ -127,6 +163,13 @@ details:
   - Validate full chain (learning → export → GUI → QA).
   - Build release artifacts (macOS, Windows optional).
   - Push final build and changelog updates to SoT.
+progress_milestones:
+  - "CI pipeline publishes signed artifacts for Linux (mandatory) + optional targets."
+  - "End-to-end regression run completes under agreed SLA."
+definition_of_done:
+  - "Release checklist completed and archived alongside changelog."
+  - "Versioned artifacts mirrored to long-term storage."
+  - "SoT updated with release hash + distribution metadata."
 progress: 0
 status: pending
 expected_output:
