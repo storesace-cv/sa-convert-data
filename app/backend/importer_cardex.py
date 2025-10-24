@@ -36,13 +36,22 @@ def import_cardex_reformulado(xlsx_path: str | None, batch_id: str) -> Dict[str,
     c_uc = get("unid_compra")
     c_us = get("unid_stock")
     c_ul = get("unid_logistica")
+    if c_ul is None:
+        c_ul = get("unid_log")
     conn = connect()
     inserted = 0
     w_inserted = 0
     with conn:
+        conn.execute("""DELETE FROM approval_decision WHERE cluster_id IN (
+                          SELECT id FROM cluster_proposal WHERE batch_id=?
+                      )""", (batch_id,))
+        conn.execute("DELETE FROM cluster_member WHERE cluster_id IN (SELECT id FROM cluster_proposal WHERE batch_id=?)", (batch_id,))
+        conn.execute("DELETE FROM cluster_proposal WHERE batch_id=?", (batch_id,))
+        conn.execute("DELETE FROM working_article WHERE batch_id=?", (batch_id,))
+        conn.execute("DELETE FROM imported_raw WHERE batch_id=?", (batch_id,))
         for i, row in enumerate(ws.iter_rows(min_row=2), start=2):
             nome = row[c_nome].value if c_nome is not None and row[c_nome] else ""
-            if not nome: 
+            if not nome:
                 continue
             nome = str(nome)
             nome_norm = normalize_name(nome)

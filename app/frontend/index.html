@@ -33,6 +33,46 @@
       <button id="btn-learn">Executar aprendizagem</button>
       <pre id="learn-log"></pre>
     </section>
+
+    <section class="card">
+      <h2>Importar Cardex</h2>
+      <div class="row">
+        <label>Batch ID:</label>
+        <input id="batch-id" placeholder="ex: 2024-07" />
+      </div>
+      <div class="row">
+        <label>Ficheiro:</label>
+        <input id="cardex-path" placeholder="/caminho/cardex.xlsx" />
+      </div>
+      <button id="btn-import">Importar</button>
+      <pre id="import-log"></pre>
+    </section>
+
+    <section class="card">
+      <h2>Clustering</h2>
+      <div class="row">
+        <label>Threshold t1:</label>
+        <input id="threshold-1" type="number" value="0.85" step="0.01" />
+      </div>
+      <div class="row">
+        <label>Threshold t2:</label>
+        <input id="threshold-2" type="number" value="0.92" step="0.01" />
+      </div>
+      <p class="hint">t1 define quando dois artigos ficam ligados. t2 marca seleções automáticas.</p>
+      <button id="btn-cluster">Propor clusters</button>
+      <pre id="cluster-log"></pre>
+    </section>
+
+    <section class="card card-wide">
+      <h2>Revisão &amp; aprovação</h2>
+      <p>Seleciona os membros relevantes e aprova o cluster para gerar o artigo canónico.</p>
+      <div class="review-actions">
+        <button id="btn-refresh-clusters">Atualizar clusters</button>
+      </div>
+      <div id="clusters-area" class="clusters-area">
+        <p class="empty">Sem clusters carregados.</p>
+      </div>
+    </section>
   </main>
 
   <script src="app.js"></script>
