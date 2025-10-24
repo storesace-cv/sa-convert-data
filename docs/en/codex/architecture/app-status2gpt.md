@@ -23,3 +23,13 @@ Every Codex runner **MUST** append a changelog entry.
 - Runner: 020 — Start environment runner
 - Changed: start.sh (exec), .venv/*, requirements.txt (read)
 - Summary: Criado/validado venv e instaladas dependências.
+
+## Change @ 2025-10-24T00:57:09Z
+- Runner: 100 — Scaffold da aplicação
+- Changed: app/*, tools/*, rules/*, main.py
+- Summary: Esqueleto pywebview direto + DB + modo aprendizagem + runners.
+
+## Change @ 2025-10-24T00:57:09Z
+- Runner: 110 — DB initialized
+- Changed: data.sqlite (created), tools/init_db.py (exec)
+- Summary: Schema criado/validado (memória de decisões).
