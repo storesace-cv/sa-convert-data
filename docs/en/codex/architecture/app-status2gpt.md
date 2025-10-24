@@ -6,6 +6,11 @@ Every Codex runner **MUST** append a changelog entry.
 - SoT index: `docs/en/codex/architecture/app-status-index.json`
 - This file: `docs/en/codex/architecture/app-status2gpt.md`
 
+## Maintenance & Metadata
+- Atualize `artifacts.last_update` no índice sempre que este SoT for modificado.
+- Reavalie `branch_user` e `repo_remote` após qualquer alteração de fluxo de trabalho git.
+- Registre abaixo cada alteração com um novo timestamp ISO 8601.
+
 ## Project
 - Name: sa-convert-data
 - GUI: pywebview (direct, no HTTP server)
@@ -193,3 +198,8 @@ Every Codex runner **MUST** append a changelog entry.
 - Runner: Docs — Roadmap
 - Changed: docs/roadmap.md
 - Summary: Adicionado roadmap detalhado com etapas planeadas.
+
+## Change @ 2025-10-24T19:05:00Z
+- Runner: Docs — SoT metadata audit
+- Changed: docs/en/codex/architecture/app-status2gpt.md, docs/en/codex/architecture/app-status-index.json
+- Summary: Reforçada a disciplina de manutenção do SoT e sincronizado o timestamp de atualização dos artefatos.

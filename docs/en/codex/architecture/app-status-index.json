@@ -5,7 +5,7 @@
   },
   "artifacts": {
     "mode": "pywebview-direct",
-    "last_update": "2025-10-24T18:50:44Z",
+    "last_update": "2025-10-24T19:05:00Z",
     "repo_remote": "git@github.com:storesace-cv/sa-convert-data.git",
     "branch_user": "my-sa-convert-data"
   },
@@ -13,6 +13,7 @@
     "ALWAYS update app-status2gpt.md after running any codex runner.",
     "Keep actions idempotent.",
     "Paths are repo-root relative.",
-    "Never change the 2-line header of the export model."
+    "Never change the 2-line header of the export model.",
+    "Sempre sincronize `artifacts.last_update` ao atualizar o SoT."
   ]
 }
