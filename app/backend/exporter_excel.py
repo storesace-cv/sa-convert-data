@@ -9,6 +9,7 @@ from openpyxl import load_workbook
 
 from app.backend.audit import current_user, log_action
 from app.backend.cardex_schema import CARDEX_FIELD_ORDER
+from app.backend.classification_rules import canonical_attrs
 from app.backend.db import connect, now_utc
 from app.config import EXPORT_DIR, ensure_dirs
 
@@ -23,16 +24,19 @@ CLASSIFICATION_KEYS: tuple[str, ...] = (
 )
 
 
-def _selected_classification(record: dict[str, Any]) -> str:
-    for key in CLASSIFICATION_KEYS:
-        raw = record.get(key)
-        if raw is None:
-            continue
-        if isinstance(raw, str) and raw.strip().upper() == "X":
-            return key
-        if raw not in ("", 0):
-            return key
-    return "class_generico"
+def _classification_from_canonical(record: dict[str, Any]) -> str:
+    canonical_id = record.get("canonical_id")
+    if canonical_id:
+        scope = record.get("canonical_scope") or "global"
+        attrs = canonical_attrs(scope, canonical_id)
+        if attrs:
+            tag = attrs.get("class_tag")
+            if tag == "COMPRA":
+                return "class_compra"
+            if tag == "COMPRA/VENDA":
+                return "class_compra_venda"
+        return "class_compra_venda"
+    return "class_compra_venda"
 
 
 def _classification_marks(selected: str) -> dict[str, str | None]:
@@ -77,7 +81,9 @@ def export_excel_using_model(model_path: str, out_path: str | None, batch_id: st
             f"""
             SELECT
                 a.id AS approval_id,
+                a.canonical_id,
                 COALESCE(ci.name_canonico, ir.nome || ' (m)') AS canonical_label,
+                ci.scope AS canonical_scope,
                 a.unit_default AS unit_default_final,
                 a.unit_compra AS unit_compra_final,
                 a.unit_stock AS unit_stock_final,
@@ -139,7 +145,7 @@ def export_excel_using_model(model_path: str, out_path: str | None, batch_id: st
                 else:
                     row_values[key] = canonical_label
 
-            class_key = _selected_classification(record)
+            class_key = _classification_from_canonical(record)
             row_values.update(_classification_marks(class_key))
 
             for unit_key, final_key in (

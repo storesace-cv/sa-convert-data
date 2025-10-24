@@ -12,9 +12,9 @@
       "title": "Foundation"
     },
     "2": {
-      "percent": 48,
+      "percent": 58,
       "tasks": {
-        "classification_rules": 50,
+        "classification_rules": 100,
         "dedup_across_stores": 30,
         "export_excel": 30,
         "normalization": 50,
@@ -49,5 +49,5 @@
     }
   },
   "schema": 1,
-  "updated_at": "2025-10-24T22:15:00Z"
+  "updated_at": "2025-10-24T23:00:00Z"
 }

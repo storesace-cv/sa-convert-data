@@ -166,9 +166,9 @@ def test_exporter_populates_all_columns_and_log_sheet(tmp_path, monkeypatch):
         assert row_map["desc_curta1"] == "Produto Canonico"
         assert row_map["desc_curta2"] == "Produto Canonico"
 
-        assert row_map["class_venda"] == "X"
+        assert row_map["class_compra_venda"] == "X"
         for key in CLASSIFICATION_KEYS:
-            if key == "class_venda":
+            if key == "class_compra_venda":
                 continue
             assert row_map[key] in (None, "")
 
