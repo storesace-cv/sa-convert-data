@@ -50,6 +50,7 @@ async function importCardex() {
 
 async function runClustering() {
   const batchId = (document.getElementById('batch-id').value || '').trim();
+  const scope = document.getElementById('scope').value || 'global';
   const t1 = parseFloat(document.getElementById('threshold-1').value) || 0.85;
   const t2 = parseFloat(document.getElementById('threshold-2').value) || 0.92;
   const output = document.getElementById('cluster-log');
@@ -61,7 +62,7 @@ async function runClustering() {
 
   output.textContent = 'A clusterizar...';
   try {
-    const result = await window.pywebview.api.run_clustering(batchId, t1, t2);
+    const result = await window.pywebview.api.run_clustering(batchId, scope, t1, t2);
     output.textContent = stringifyResult(result);
     await loadClusters();
   } catch (e) {

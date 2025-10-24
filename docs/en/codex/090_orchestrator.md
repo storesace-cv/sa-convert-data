@@ -13,6 +13,7 @@ params:
   MODEL: ""             # se vazio, não exporta a menos que seja definido
   AUTO_APPROVE: "0"     # "1" para aprovar tudo automaticamente (não recomendado em produção)
   DO_EXPORT: "0"        # "1" para exportar (requer MODEL definido)
+  SCOPE: "global"
 ---
 
 # Step 095 — Bootstrap paths
@@ -44,7 +45,8 @@ python - <<'PY'
 import os, pprint
 from app.backend.clustering import propose_clusters
 BATCH=os.environ.get("BATCH","batch-demo")
-res = propose_clusters(BATCH)
+SCOPE=os.environ.get("SCOPE","global")
+res = propose_clusters(BATCH, SCOPE)
 print("== CLUSTER =="); pprint.pprint(res)
 PY
 ```
