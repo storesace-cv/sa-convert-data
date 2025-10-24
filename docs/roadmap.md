@@ -11,7 +11,7 @@ All Codex runners must refer to this file for dependency and milestone tracking.
 |-------|--------|------|-------------|---------|
 | 0 | Setup & Branch | Environment and repository setup | 100% | ✅ Done |
 | 1 | Learning Engine | Deduplication & Learning ingestion | 40% | ⚙️ In Progress |
-| 2 | Classification Rules | Article type inference & logic | 0% | ⏳ Pending |
+| 2 | Classification Rules | Article type inference & logic | 25% | ⚙️ In Progress |
 | 3 | Export & Validation | Structured exports, QA checks | 0% | ⏳ Pending |
 | 4 | GUI & QA Automation | Interactive GUI + test harness | 0% | ⏳ Pending |
 | 5 | Release & CI/CD | Final validation and GitHub Actions | 0% | ⏳ Pending |
@@ -85,8 +85,8 @@ definition_of_done:
   - "Classification runner produces deterministic output from same seed data."
   - "Confidence metrics exported to rules/classification_rules.json metadata block."
   - "Regression tests capture at least 5 representative misclassification scenarios."
-progress: 0
-status: pending
+progress: 25
+status: in progress
 expected_output:
   - rules/classification_rules.json
   - tools/classify.py

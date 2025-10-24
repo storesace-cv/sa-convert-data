@@ -21,3 +21,8 @@ This file mirrors progress.json. Managed by scripts.
 - Runner: Phase 1 — Learning Engine completion
 - Changed: .gitignore, app/backend/db.py, databases/app/README.md, databases/app/schema.sql, docs/roadmap.md, docs/en/codex/110_init_db_runner.md
 - Summary: Replaced the tracked SQLite artifact with a schema script and refreshed initialization docs for client-side database creation.
+
+## Change @ 2025-10-24T23:00:00Z
+- Runner: 315 — Artigo - Classificacao (only COMPRA / COMPRA/VENDA, default COMPRA/VENDA)
+- Changed: app/backend/classification_engine.py, app/backend/classification_rules.py, app/backend/exporter_excel.py, rules/classification_rules.json, tools/classify.py, tests/test_classification_engine.py, tests/test_exporter_excel.py, docs/roadmap.md, docs/en/codex/progress.json, docs/en/codex/architecture/app-status-index.json
+- Summary: Added canonical classification inference with confidence metrics, CLI generation tool, exporter integration, and updated progress documentation for the classification rules milestone.
