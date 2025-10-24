@@ -13,3 +13,23 @@ Every Codex runner **MUST** append a changelog entry.
 
 ## Changelog
 - 2025-10-24T00:17:25Z — Seed v2: SSH remote fixed, `.codex.env` added, start.sh & runners ready.
+
+## Change @ 2025-10-24T00:36:04Z
+- Runner: 001 — Branch setup (HTTPS)
+- Changed: git remote (origin), branches (main/my-sa-convert-data)
+- Summary: Configurado origin via HTTPS e criado/alinhado o branch pessoal.
+
+## Change @ 2025-10-24T00:36:04Z
+- Runner: 020 — Start environment runner
+- Changed: start.sh (exec), .venv/*, requirements.txt (read)
+- Summary: Criado/validado venv e instaladas dependências.
+
+## Change @ 2025-10-24T00:57:09Z
+- Runner: 100 — Scaffold da aplicação
+- Changed: app/*, tools/*, rules/*, main.py
+- Summary: Esqueleto pywebview direto + DB + modo aprendizagem + runners.
+
+## Change @ 2025-10-24T00:57:09Z
+- Runner: 110 — DB initialized
+- Changed: data.sqlite (created), tools/init_db.py (exec)
+- Summary: Schema criado/validado (memória de decisões).

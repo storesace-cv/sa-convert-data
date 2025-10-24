@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>sa-convert-data</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header>
+    <h1>sa-convert-data</h1>
+    <p>Modo: <strong id="mode-label">Idle</strong></p>
+  </header>
+
+  <main>
+    <section class="card">
+      <h2>Status</h2>
+      <button id="btn-status">Ler SoT</button>
+      <pre id="status"></pre>
+    </section>
+
+    <section class="card">
+      <h2>Modo Aprendizagem</h2>
+      <p>Importa <code>ingredientes - aprendizagem.xlsx</code> (sem exportar).</p>
+      <div class="row">
+        <label>Scope:</label>
+        <input id="scope" value="global" />
+      </div>
+      <div class="row">
+        <label>Ficheiro:</label>
+        <input id="learn-path" placeholder="/caminho/ingredientes - aprendizagem.xlsx" />
+      </div>
+      <button id="btn-learn">Executar aprendizagem</button>
+      <pre id="learn-log"></pre>
+    </section>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
