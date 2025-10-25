@@ -114,8 +114,8 @@ definition_of_done:
   - "Half-up rounding verified via automated test matrix."
   - "Exports reproducible with checksum logged in SoT."
   - "Validation_report.json flags zero blocking issues across sample datasets."
-progress: 0
-status: pending
+progress: 100
+status: complete
 expected_output:
   - exports/cleaned_articles.xlsx
   - exports/validation_report.json
@@ -171,8 +171,8 @@ definition_of_done:
   - "Release checklist completed and archived alongside changelog."
   - "Versioned artifacts mirrored to long-term storage."
   - "SoT updated with release hash + distribution metadata."
-progress: 0
-status: pending
+progress: 100
+status: complete
 expected_output:
   - artifacts/sa-convert-data_vX.Y.Z.zip
   - docs/en/codex/changelog_final.md

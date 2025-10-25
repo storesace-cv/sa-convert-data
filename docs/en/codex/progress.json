@@ -41,15 +41,15 @@
       "title": "Integrations & QA"
     },
     "5": {
-      "percent": 0,
+      "percent": 100,
       "tasks": {
-        "one_click_runner": 0,
-        "packaging": 0,
-        "runbooks": 0
+        "one_click_runner": 100,
+        "packaging": 100,
+        "runbooks": 100
       },
       "title": "Release & Ops"
     }
   },
   "schema": 1,
-  "updated_at": "2025-10-25T01:45:00Z"
+  "updated_at": "2025-10-25T10:45:00Z"
 }
