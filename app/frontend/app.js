@@ -9,8 +9,10 @@ const clusterStates = new Map();
 
 const DASHBOARD_TEMPLATE_RETRY_LIMIT = 1;
 const DASHBOARD_RETRY_DELAY = 600;
+const DASHBOARD_STATIC_PATH = '../../gui/learning_dashboard.html';
 let dashboardLoaded = false;
 let dashboardLoading = false;
+let dashboardFallbackActive = false;
 
 function getDashboardFrame() {
   return document.getElementById('learning-dashboard-frame');
@@ -37,23 +39,20 @@ function setDashboardStatus(message, tone = 'info') {
   }
 }
 
-function escapeHtml(value) {
-  return String(value).replace(/[&<>"']/g, (char) => {
-    switch (char) {
-      case '&':
-        return '&amp;';
-      case '<':
-        return '&lt;';
-      case '>':
-        return '&gt;';
-      case '"':
-        return '&quot;';
-      case "'":
-        return '&#39;';
-      default:
-        return char;
-    }
-  });
+function useDashboardStaticFallback(reason) {
+  const frame = getDashboardFrame();
+  if (!frame) {
+    return;
+  }
+
+  dashboardFallbackActive = true;
+  frame.srcdoc = '';
+  frame.src = DASHBOARD_STATIC_PATH;
+  dashboardLoaded = true;
+
+  const detail = reason ? ` Detalhes: ${reason}` : '';
+  setDashboardStatus(`A carregar dashboard estático (modo offline).${detail}`, 'error');
+  console.warn('Dashboard: fallback para template estático.', reason);
 }
 
 async function loadDashboardFrame(retriesLeft = DASHBOARD_TEMPLATE_RETRY_LIMIT) {
@@ -72,7 +71,7 @@ async function loadDashboardFrame(retriesLeft = DASHBOARD_TEMPLATE_RETRY_LIMIT) 
       setDashboardStatus('A aguardar a API do PyWebView…');
       setTimeout(() => loadDashboardFrame(retriesLeft - 1), DASHBOARD_RETRY_DELAY);
     } else {
-      setDashboardStatus('API do PyWebView indisponível para carregar o dashboard.', 'error');
+      useDashboardStaticFallback('API do PyWebView indisponível para carregar o dashboard.');
     }
     return;
   }
@@ -90,6 +89,7 @@ async function loadDashboardFrame(retriesLeft = DASHBOARD_TEMPLATE_RETRY_LIMIT) 
     frame.src = 'about:blank';
     frame.srcdoc = response.html;
     dashboardLoaded = true;
+    dashboardFallbackActive = false;
     setDashboardStatus('');
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error || 'Erro desconhecido');
@@ -99,12 +99,7 @@ async function loadDashboardFrame(retriesLeft = DASHBOARD_TEMPLATE_RETRY_LIMIT) 
       setDashboardStatus('Erro ao carregar dashboard. A tentar novamente…');
       setTimeout(() => loadDashboardFrame(retriesLeft - 1), DASHBOARD_RETRY_DELAY);
     } else {
-      const sanitized = escapeHtml(message);
-      const errorHtml = `<!doctype html><html><body style="font-family: system-ui, -apple-system, sans-serif; background:#0b1220; color:#fca5a5; padding:1.5rem;">` +
-        `<strong>Erro ao carregar dashboard.</strong><br /><span style="font-size:0.9rem;">${sanitized}</span></body></html>`;
-      frame.src = 'about:blank';
-      frame.srcdoc = errorHtml;
-      setDashboardStatus(`Erro ao carregar dashboard: ${message}`, 'error');
+      useDashboardStaticFallback(`Erro ao carregar template dinâmico: ${message}`);
     }
   } finally {
     dashboardLoading = false;
@@ -721,7 +716,8 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('pywebviewready', () => {
-  if (!dashboardLoaded) {
-    loadDashboardFrame(DASHBOARD_TEMPLATE_RETRY_LIMIT);
+  if (dashboardFallbackActive) {
+    dashboardLoaded = false;
   }
+  loadDashboardFrame(DASHBOARD_TEMPLATE_RETRY_LIMIT);
 });
