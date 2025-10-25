@@ -41,3 +41,8 @@ This file mirrors progress.json. Managed by scripts.
 - Runner: Phase 5 — Release & CI/CD
 - Changed: .github/workflows/release.yml, VERSION, app/__init__.py, app/backend/sample_data.py, docs/en/codex/architecture/app-status-index.json, docs/en/codex/architecture/app-status2gpt.md, docs/en/codex/changelog_final.md, docs/en/codex/progress.json, docs/roadmap.md, scripts/release/build_release.py, artifacts/release_v0.5.0/summary.json, artifacts/release_v0.5.0/validation_report.json
 - Summary: Finalized the release pipeline with automated end-to-end validation, packaging, and GitHub Actions integration; published the release changelog, recorded validation evidence, and documented that generated archives remain gitignored per repository policy.
+
+## Change @ 2025-10-25T12:00:00Z
+- Runner: Smart-Mode — Dashboard iframe loading fix
+- Changed: app/backend/api.py, app/frontend/index.html, app/frontend/app.js, docs/en/codex/architecture/app-status-index.json, docs/en/codex/architecture/app-status2gpt.md
+- Summary: Added a cached backend endpoint to serve the dashboard template, updated the frontend to fetch and inject the markup with retry-aware error handling, and recorded the maintenance activity in the Smart-Mode status index.
