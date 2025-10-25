@@ -31,3 +31,8 @@ This file mirrors progress.json. Managed by scripts.
 - Runner: Phase 3 — Export & Validation
 - Changed: app/backend/export_validation.py, app/backend/exporter_excel.py, tools/export_validate.py, tests/test_export_validation.py, tests/test_exporter_excel.py, docs/en/codex/progress.json, docs/en/codex/architecture/app-status-index.json
 - Summary: Implemented export validation with canonical structure enforcement and half-up rounding, wired results into the Excel exporter, added CLI orchestration with decision logging, expanded automated coverage, and marked Phase 3 deliverables complete in SoT.
+
+## Change @ 2025-10-25T01:45:00Z
+- Runner: Phase 4 — GUI dashboard & QA automation
+- Changed: app/backend/api.py, app/backend/dashboard_metrics.py, app/frontend/app.js, app/frontend/index.html, app/frontend/styles.css, gui/learning_dashboard.html, gui/reportbro_dashboard.json, requirements.txt, tests/qa_results.json, tests/test_dashboard_metrics.py, docs/en/codex/progress.json, docs/en/codex/architecture/app-status-index.json, docs/roadmap.md
+- Summary: Added a PyWebView dashboard with live learning indicators, wired ReportBro PDF export and QA telemetry into the backend API, introduced automated dashboard tests with persisted QA results, and updated phase progress documentation to reflect the new coverage.

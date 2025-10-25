@@ -7,6 +7,30 @@ const UNIT_TYPES = [
 
 const clusterStates = new Map();
 
+function getDashboardFrame() {
+  return document.getElementById('learning-dashboard-frame');
+}
+
+function postDashboardMessage(action, payload = {}) {
+  const frame = getDashboardFrame();
+  if (!frame || !frame.contentWindow) {
+    return;
+  }
+  frame.contentWindow.postMessage({
+    source: 'sa-convert-data',
+    action,
+    ...payload,
+  }, '*');
+}
+
+function notifyDashboardScope(scope) {
+  postDashboardMessage('scope-change', { scope });
+}
+
+function notifyDashboardRefresh(reason) {
+  postDashboardMessage('refresh', { reason });
+}
+
 function stringifyResult(result) {
   return JSON.stringify(result, null, 2);
 }
@@ -150,6 +174,9 @@ async function runLearning() {
   try {
     const result = await window.pywebview.api.learning_import(fpath, scope);
     output.textContent = stringifyResult(result);
+    if (!result || result.ok !== false) {
+      notifyDashboardRefresh('learning-run');
+    }
   } catch (e) {
     output.textContent = 'Erro: ' + e;
   }
@@ -173,6 +200,9 @@ async function forgetLearning() {
   try {
     const result = await window.pywebview.api.forget_learning(scope);
     output.textContent = stringifyResult(result);
+    if (!result || result.ok !== false) {
+      notifyDashboardRefresh('forget-learning');
+    }
   } catch (e) {
     output.textContent = 'Erro: ' + e;
   } finally {
@@ -221,6 +251,9 @@ async function importCardex() {
   try {
     const result = await window.pywebview.api.import_cardex(filePath, batchId);
     output.textContent = stringifyResult(result);
+    if (!result || result.ok !== false) {
+      notifyDashboardRefresh('import-cardex');
+    }
     await loadClusters();
   } catch (e) {
     output.textContent = 'Erro: ' + e;
@@ -243,6 +276,9 @@ async function runClustering() {
   try {
     const result = await window.pywebview.api.run_clustering(batchId, scope, t1, t2);
     output.textContent = stringifyResult(result);
+    if (!result || result.ok !== false) {
+      notifyDashboardRefresh('run-clustering');
+    }
     await loadClusters();
   } catch (e) {
     output.textContent = 'Erro: ' + e;
@@ -562,4 +598,22 @@ document.addEventListener('DOMContentLoaded', () => {
       chooseFileForInput(targetId, purpose);
     });
   });
+
+  const scopeInput = document.getElementById('scope');
+  const emitScope = () => notifyDashboardScope(getCurrentScope());
+  if (scopeInput) {
+    ['change', 'blur'].forEach(evt => scopeInput.addEventListener(evt, emitScope));
+    scopeInput.addEventListener('keyup', (event) => {
+      if (event.key === 'Enter') {
+        emitScope();
+      }
+    });
+    emitScope();
+  } else {
+    emitScope();
+  }
+
+  setTimeout(() => {
+    notifyDashboardRefresh('initial-load');
+  }, 300);
 });

@@ -5,6 +5,11 @@ import webview
 
 from app.backend.audit import log_action
 from app.backend.db import connect, init_db, now_utc
+from app.backend.dashboard_metrics import (
+    DashboardMetricsError,
+    collect_dashboard_metrics,
+    render_dashboard_report,
+)
 from app.backend.learning_importer import learn_from_xlsx, forget_learning as forget_learning_scope
 from app.backend.importer_cardex import import_cardex_reformulado
 from app.backend.clustering import propose_clusters
@@ -495,3 +500,25 @@ class ExposedAPI:
                 conn.close()
         except Exception as e:
             return {"ok": False, "error": str(e)}
+
+    # Dashboard
+    def get_dashboard_metrics(self, scope: str = "global") -> Dict[str, Any]:
+        try:
+            return {
+                "ok": True,
+                "data": collect_dashboard_metrics(scope or "global"),
+            }
+        except DashboardMetricsError as exc:
+            return {"ok": False, "error": str(exc)}
+        except Exception as exc:  # pragma: no cover - defensive guard
+            return {"ok": False, "error": str(exc)}
+
+    def generate_dashboard_report(self, scope: str = "global") -> Dict[str, Any]:
+        try:
+            result = render_dashboard_report(scope or "global")
+            result["ok"] = True
+            return result
+        except DashboardMetricsError as exc:
+            return {"ok": False, "error": str(exc)}
+        except Exception as exc:  # pragma: no cover - defensive guard
+            return {"ok": False, "error": str(exc)}
