@@ -1,0 +1,14 @@
+{
+  "batch_id": "release-batch",
+  "generated_at": "2025-10-25T10:17:35Z",
+  "export_file": "artifacts/release_v0.5.0/cleaned_articles.xlsx",
+  "rows": 1,
+  "validation": {
+    "total_rows": 1,
+    "missing_columns": {},
+    "rounding_adjustments": [],
+    "invalid_monetary": [],
+    "defaults_applied": [],
+    "extra_fields": []
+  }
+}

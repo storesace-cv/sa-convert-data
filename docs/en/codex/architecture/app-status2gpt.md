@@ -36,3 +36,8 @@ This file mirrors progress.json. Managed by scripts.
 - Runner: Phase 4 — GUI dashboard & QA automation
 - Changed: app/backend/api.py, app/backend/dashboard_metrics.py, app/frontend/app.js, app/frontend/index.html, app/frontend/styles.css, gui/learning_dashboard.html, gui/reportbro_dashboard.json, requirements.txt, tests/qa_results.json, tests/test_dashboard_metrics.py, docs/en/codex/progress.json, docs/en/codex/architecture/app-status-index.json, docs/roadmap.md
 - Summary: Added a PyWebView dashboard with live learning indicators, wired ReportBro PDF export and QA telemetry into the backend API, introduced automated dashboard tests with persisted QA results, and updated phase progress documentation to reflect the new coverage.
+
+## Change @ 2025-10-25T10:45:00Z
+- Runner: Phase 5 — Release & CI/CD
+- Changed: .github/workflows/release.yml, VERSION, app/__init__.py, app/backend/sample_data.py, docs/en/codex/architecture/app-status-index.json, docs/en/codex/architecture/app-status2gpt.md, docs/en/codex/changelog_final.md, docs/en/codex/progress.json, docs/roadmap.md, scripts/release/build_release.py, artifacts/release_v0.5.0/summary.json, artifacts/release_v0.5.0/validation_report.json
+- Summary: Finalized the release pipeline with automated end-to-end validation, packaging, and GitHub Actions integration; published the release changelog, recorded validation evidence, and documented that generated archives remain gitignored per repository policy.

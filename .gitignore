@@ -10,3 +10,5 @@ data.sqlite
 data.db
 databases/app/*.sqlite
 databases/app/*.db
+artifacts/**/*.xlsx
+artifacts/**/*.zip
