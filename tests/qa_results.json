@@ -1,0 +1,30 @@
+{
+  "suite": "gui_qa",
+  "generated_at": "2025-10-25T00:00:00Z",
+  "checks": [
+    {
+      "id": "dashboard_metrics_schema",
+      "name": "Dashboard metrics schema valid",
+      "status": "pass",
+      "details": "Estrutura principal e campos obrigatórios verificados."
+    },
+    {
+      "id": "reportbro_template_validate",
+      "name": "ReportBro template compila",
+      "status": "pass",
+      "details": "Template JSON carregado e validado via reportbro.Report."
+    },
+    {
+      "id": "ui_snapshot_pending",
+      "name": "Snapshot visual atualizado",
+      "status": "pending",
+      "details": "Captura manual pendente para confirmar contraste."
+    },
+    {
+      "id": "accessibility_review",
+      "name": "Checklist de acessibilidade",
+      "status": "blocked",
+      "details": "Depende de avaliação externa com leitores de ecrã."
+    }
+  ]
+}

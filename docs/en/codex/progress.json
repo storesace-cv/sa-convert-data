@@ -32,10 +32,11 @@
       "title": "Observability & Docs"
     },
     "4": {
-      "percent": 10,
+      "percent": 55,
       "tasks": {
-        "ci_coverage_targets": 0,
-        "db_migrate_init": 20
+        "gui_dashboard": 100,
+        "qa_automation": 65,
+        "reportbro_templates": 75
       },
       "title": "Integrations & QA"
     },
@@ -50,5 +51,5 @@
     }
   },
   "schema": 1,
-  "updated_at": "2025-10-25T00:30:00Z"
+  "updated_at": "2025-10-25T01:45:00Z"
 }

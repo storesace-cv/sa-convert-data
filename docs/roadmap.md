@@ -13,7 +13,7 @@ All Codex runners must refer to this file for dependency and milestone tracking.
 | 1 | Learning Engine | Deduplication & Learning ingestion | 40% | ⚙️ In Progress |
 | 2 | Classification Rules | Article type inference & logic | 25% | ⚙️ In Progress |
 | 3 | Export & Validation | Structured exports, QA checks | 0% | ⏳ Pending |
-| 4 | GUI & QA Automation | Interactive GUI + test harness | 0% | ⏳ Pending |
+| 4 | GUI & QA Automation | Interactive GUI + test harness | 55% | ⚙️ In Progress |
 | 5 | Release & CI/CD | Final validation and GitHub Actions | 0% | ⏳ Pending |
 
 ---
@@ -135,6 +135,7 @@ details:
   - Implement visual progress indicators.
   - Add QA unit tests and dashboards.
   - Integrate ReportBro templates for PDF export.
+  - Surface automated QA telemetry via shared JSON artefacts.
 progress_milestones:
   - "GUI displays live metrics from learning + classification runs."
   - "Automated QA suite covers ≥80% of GUI-critical paths."
@@ -142,8 +143,8 @@ definition_of_done:
   - "Smoke UI test executed via QA automation after each release branch push."
   - "ReportBro templates render without validation errors."
   - "Accessibility checklist (contrast + keyboard navigation) signed off."
-progress: 0
-status: pending
+progress: 55
+status: in progress
 expected_output:
   - gui/learning_dashboard.html
   - tests/qa_results.json

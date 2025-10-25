@@ -5,3 +5,4 @@ scikit-learn>=1.5
 python-dotenv>=1.0
 pydantic>=2.8
 PyYAML>=6.0
+reportbro-lib>=3.11
