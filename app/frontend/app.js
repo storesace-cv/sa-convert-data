@@ -7,8 +7,108 @@ const UNIT_TYPES = [
 
 const clusterStates = new Map();
 
+const DASHBOARD_TEMPLATE_RETRY_LIMIT = 1;
+const DASHBOARD_RETRY_DELAY = 600;
+let dashboardLoaded = false;
+let dashboardLoading = false;
+
 function getDashboardFrame() {
   return document.getElementById('learning-dashboard-frame');
+}
+
+function getDashboardStatusNode() {
+  return document.getElementById('dashboard-status');
+}
+
+function setDashboardStatus(message, tone = 'info') {
+  const node = getDashboardStatusNode();
+  if (!node) {
+    return;
+  }
+
+  const text = message || '';
+  node.textContent = text;
+  node.hidden = text.length === 0;
+
+  if (tone === 'error') {
+    node.classList.add('error');
+  } else {
+    node.classList.remove('error');
+  }
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, (char) => {
+    switch (char) {
+      case '&':
+        return '&amp;';
+      case '<':
+        return '&lt;';
+      case '>':
+        return '&gt;';
+      case '"':
+        return '&quot;';
+      case "'":
+        return '&#39;';
+      default:
+        return char;
+    }
+  });
+}
+
+async function loadDashboardFrame(retriesLeft = DASHBOARD_TEMPLATE_RETRY_LIMIT) {
+  const frame = getDashboardFrame();
+  if (!frame) {
+    return;
+  }
+
+  if (dashboardLoaded || dashboardLoading) {
+    return;
+  }
+
+  const api = window.pywebview?.api;
+  if (!api || typeof api.get_dashboard_template !== 'function') {
+    if (retriesLeft > 0) {
+      setDashboardStatus('A aguardar a API do PyWebView…');
+      setTimeout(() => loadDashboardFrame(retriesLeft - 1), DASHBOARD_RETRY_DELAY);
+    } else {
+      setDashboardStatus('API do PyWebView indisponível para carregar o dashboard.', 'error');
+    }
+    return;
+  }
+
+  dashboardLoading = true;
+  setDashboardStatus('A carregar dashboard…');
+
+  try {
+    const response = await api.get_dashboard_template();
+    if (!response || response.ok === false || !response.html) {
+      const backendError = response?.error || 'Resposta inválida do backend.';
+      throw new Error(backendError);
+    }
+
+    frame.src = 'about:blank';
+    frame.srcdoc = response.html;
+    dashboardLoaded = true;
+    setDashboardStatus('');
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error || 'Erro desconhecido');
+    console.error('Erro ao carregar dashboard:', error);
+
+    if (retriesLeft > 0) {
+      setDashboardStatus('Erro ao carregar dashboard. A tentar novamente…');
+      setTimeout(() => loadDashboardFrame(retriesLeft - 1), DASHBOARD_RETRY_DELAY);
+    } else {
+      const sanitized = escapeHtml(message);
+      const errorHtml = `<!doctype html><html><body style="font-family: system-ui, -apple-system, sans-serif; background:#0b1220; color:#fca5a5; padding:1.5rem;">` +
+        `<strong>Erro ao carregar dashboard.</strong><br /><span style="font-size:0.9rem;">${sanitized}</span></body></html>`;
+      frame.src = 'about:blank';
+      frame.srcdoc = errorHtml;
+      setDashboardStatus(`Erro ao carregar dashboard: ${message}`, 'error');
+    }
+  } finally {
+    dashboardLoading = false;
+  }
 }
 
 function postDashboardMessage(action, payload = {}) {
@@ -599,6 +699,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  loadDashboardFrame(DASHBOARD_TEMPLATE_RETRY_LIMIT);
+
   const scopeInput = document.getElementById('scope');
   const emitScope = () => notifyDashboardScope(getCurrentScope());
   if (scopeInput) {
@@ -616,4 +718,10 @@ document.addEventListener('DOMContentLoaded', () => {
   setTimeout(() => {
     notifyDashboardRefresh('initial-load');
   }, 300);
+});
+
+window.addEventListener('pywebviewready', () => {
+  if (!dashboardLoaded) {
+    loadDashboardFrame(DASHBOARD_TEMPLATE_RETRY_LIMIT);
+  }
 });

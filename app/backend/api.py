@@ -1,4 +1,5 @@
 import traceback
+from pathlib import Path
 from typing import Any, Dict
 
 import webview
@@ -20,6 +21,7 @@ from app.backend.domain_rules import prohibitions as load_prohibitions
 class ExposedAPI:
     def __init__(self) -> None:
         self._window: webview.Window | None = None
+        self._dashboard_html_cache: tuple[str, float] | None = None
 
     def attach_window(self, window: webview.Window) -> None:
         self._window = window
@@ -520,5 +522,27 @@ class ExposedAPI:
             return result
         except DashboardMetricsError as exc:
             return {"ok": False, "error": str(exc)}
+        except Exception as exc:  # pragma: no cover - defensive guard
+            return {"ok": False, "error": str(exc)}
+
+    def get_dashboard_template(self) -> Dict[str, Any]:
+        try:
+            project_root = Path(__file__).resolve().parents[2]
+            template_path = project_root / "gui" / "learning_dashboard.html"
+
+            if not template_path.is_file():
+                return {
+                    "ok": False,
+                    "error": f"Dashboard template não encontrado em {template_path}",
+                }
+
+            stat = template_path.stat()
+            cached = self._dashboard_html_cache
+            if cached and cached[1] == stat.st_mtime:
+                return {"ok": True, "html": cached[0]}
+
+            html = template_path.read_text(encoding="utf-8")
+            self._dashboard_html_cache = (html, stat.st_mtime)
+            return {"ok": True, "html": html}
         except Exception as exc:  # pragma: no cover - defensive guard
             return {"ok": False, "error": str(exc)}
