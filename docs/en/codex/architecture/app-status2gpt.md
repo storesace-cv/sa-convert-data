@@ -46,3 +46,8 @@ This file mirrors progress.json. Managed by scripts.
 - Runner: Smart-Mode — Dashboard iframe loading fix
 - Changed: app/backend/api.py, app/frontend/index.html, app/frontend/app.js, docs/en/codex/architecture/app-status-index.json, docs/en/codex/architecture/app-status2gpt.md
 - Summary: Added a cached backend endpoint to serve the dashboard template, updated the frontend to fetch and inject the markup with retry-aware error handling, and recorded the maintenance activity in the Smart-Mode status index.
+
+## Change @ 2025-10-25T13:30:00Z
+- Runner: Smart-Mode — Dashboard fallback resiliency
+- Changed: app/frontend/app.js, docs/en/codex/architecture/app-status-index.json, docs/en/codex/architecture/app-status2gpt.md
+- Summary: Implemented a static dashboard template fallback to preserve the PyWebView controls when the backend template API fails and documented the update in the Smart-Mode status files.
