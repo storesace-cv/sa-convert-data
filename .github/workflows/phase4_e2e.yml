@@ -4,17 +4,30 @@ on:
 jobs:
   e2e:
     runs-on: macos-latest
+    env:
+      PYTHONUNBUFFERED: "1"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
       - name: Install deps
+        shell: bash
         run: |
+          set -euxo pipefail
           python -m venv .venv
           . .venv/bin/activate
           pip install -r requirements.txt -r requirements-dev.txt
       - name: Run E2E
+        shell: bash
         run: |
+          set -euxo pipefail
           . .venv/bin/activate
           bash scripts/verify_phase4_e2e.sh
+      - name: Upload E2E artifacts (always)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-artifacts
+          path: e2e_artifacts/**
+          if-no-files-found: ignore

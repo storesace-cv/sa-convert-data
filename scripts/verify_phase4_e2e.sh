@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 set -euo pipefail
+
+# Debug verbosity in CI
+[[ "${CI:-}" == "true" ]] && set -x
+
 echo "🧪 Phase 4 — E2E export smoke (DB→export→artefacts→audit log)"
 
 WORKDIR="$(mktemp -d -t sa_e2e_XXXX)"
@@ -7,6 +11,32 @@ DB="${WORKDIR}/data.db"
 DBDIR="${WORKDIR}/dbdir"
 EXPORTS="${WORKDIR}/exports"
 BATCH="batch-smoke"
+
+# Make artifacts dir in the workspace to be uploaded by CI (even on failure)
+ARTIF_DIR="${GITHUB_WORKSPACE:-$PWD}/e2e_artifacts"
+mkdir -p "${ARTIF_DIR}"
+
+collect_artifacts() {
+  echo "📦 Collecting E2E artifacts..."
+  # Copy exports if they exist
+  if [[ -d "${EXPORTS}" ]]; then
+    rsync -a --delete "${EXPORTS}/" "${ARTIF_DIR}/exports/"
+  fi
+  # Copy DB for inspection
+  if [[ -f "${DB}" ]]; then
+    mkdir -p "${ARTIF_DIR}/db"
+    cp -f "${DB}" "${ARTIF_DIR}/db/data.db" || true
+  fi
+  # Copy the temp workdir structure listing
+  { echo "WORKDIR=${WORKDIR}"; echo; echo "Tree:"; command -v tree >/dev/null 2>&1 && tree -a "${WORKDIR}" || find "${WORKDIR}" -maxdepth 3 -print; } > "${ARTIF_DIR}/WORKDIR_INFO.txt" || true
+  # Record environment info
+  {
+    echo "Python:"; python --version || true
+    echo "Pip freeze (top 50):"; pip freeze | head -n 50 || true
+    echo; echo "Locale:"; locale || true
+  } > "${ARTIF_DIR}/ENV_INFO.txt" || true
+}
+trap collect_artifacts EXIT
 
 export SA_CONVERT_DB="${DB}"
 export SA_CONVERT_DB_DIR="${DBDIR}"
