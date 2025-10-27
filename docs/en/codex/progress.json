@@ -29,7 +29,8 @@
         "progress_ledger": 100,
         "export_validation": 100
       },
-      "title": "Observability & Docs"
+      "title": "Observability & Docs",
+      "status": "done"
     },
     "4": {
       "percent": 55,

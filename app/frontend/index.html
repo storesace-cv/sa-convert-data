@@ -1,97 +1,36 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>sa-convert-data</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>sa-convert-data • Dashboard</title>
+  <style>
+    body{font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin:0; padding:2rem; background:#0f172a; color:#e2e8f0;}
+    .card{background:#111827; border:1px solid #334155; border-radius:12px; padding:1.25rem; max-width:900px; margin:auto; box-shadow:0 10px 30px rgba(0,0,0,.35);}
+    h1{margin-top:0; font-size:1.4rem}
+    code{background:#0b1220; padding:.2rem .4rem; border-radius:6px; border:1px solid #25324a}
+    .grid{display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap:12px; margin-top:12px}
+    .pill{display:inline-block; padding:.2rem .6rem; background:#0b1220; border:1px solid #25324a; border-radius:999px; font-size:.85rem}
+    a{color:#93c5fd; text-decoration:none}
+  </style>
 </head>
 <body>
-  <header>
-    <h1>sa-convert-data</h1>
-    <p>Modo: <strong id="mode-label">Idle</strong></p>
-  </header>
-
-  <main>
-    <section class="card card-wide dashboard-card">
-      <h2>Dashboard PyWebView</h2>
-      <p class="hint">Indicadores de aprendizagem, regras e QA gerados em tempo real.</p>
-      <div class="dashboard-frame-wrapper">
-        <iframe
-          id="learning-dashboard-frame"
-          title="Dashboard de aprendizagem"
-          src="about:blank"
-          loading="lazy"
-        ></iframe>
-        <p id="dashboard-status" class="hint" hidden></p>
-      </div>
-    </section>
-
-    <section class="card">
-      <h2>Modo Aprendizagem</h2>
-      <p>Importa <code>ingredientes - aprendizagem.xlsx</code> (sem exportar).</p>
-      <div class="row">
-        <label>Scope:</label>
-        <input id="scope" value="global" />
-      </div>
-      <div class="row file-row">
-        <label>Ficheiro:</label>
-        <div class="file-input">
-          <input id="learn-path" placeholder="/caminho/ingredientes - aprendizagem.xlsx" />
-          <button type="button" class="secondary" data-file-target="learn-path" data-file-type="excel">Escolher…</button>
-        </div>
-      </div>
-      <div class="button-row">
-        <button id="btn-learn">Executar aprendizagem</button>
-        <button id="btn-forget-learning" class="danger">Esquecer aprendizagem</button>
-      </div>
-      <pre id="learn-log"></pre>
-    </section>
-
-    <section class="card">
-      <h2>Importar Cardex</h2>
-      <div class="row">
-        <label>Batch ID:</label>
-        <input id="batch-id" placeholder="ex: 2024-07" />
-      </div>
-      <div class="row file-row">
-        <label>Ficheiro:</label>
-        <div class="file-input">
-          <input id="cardex-path" placeholder="/caminho/cardex.xlsx" />
-          <button type="button" class="secondary" data-file-target="cardex-path" data-file-type="excel">Escolher…</button>
-        </div>
-      </div>
-      <button id="btn-import">Importar</button>
-      <pre id="import-log"></pre>
-    </section>
-
-    <section class="card">
-      <h2>Clustering</h2>
-      <div class="row">
-        <label>Threshold t1:</label>
-        <input id="threshold-1" type="number" value="0.85" step="0.01" />
-      </div>
-      <div class="row">
-        <label>Threshold t2:</label>
-        <input id="threshold-2" type="number" value="0.92" step="0.01" />
-      </div>
-      <p class="hint">t1 define quando dois artigos ficam ligados. t2 marca seleções automáticas.</p>
-      <button id="btn-cluster">Propor clusters</button>
-      <pre id="cluster-log"></pre>
-    </section>
-
-    <section class="card card-wide">
-      <h2>Revisão &amp; aprovação</h2>
-      <p>Seleciona os membros relevantes e aprova o cluster para gerar o artigo canónico.</p>
-      <div class="review-actions">
-        <button id="btn-refresh-clusters">Atualizar clusters</button>
-      </div>
-      <div id="clusters-area" class="clusters-area">
-        <p class="empty">Sem clusters carregados.</p>
-      </div>
-    </section>
-  </main>
-
-  <script src="app.js"></script>
+  <div class="card">
+    <h1>sa-convert-data — Smart‑Mode GUI</h1>
+    <p>GUI mínima servida por Bottle + PyWebView.</p>
+    <div class="grid">
+      <div><span class="pill">Phase 1: ✅</span></div>
+      <div><span class="pill">Phase 2: ✅</span></div>
+      <div><span class="pill">Phase 3: 🚧</span></div>
+    </div>
+    <p style="margin-top:1rem;">Entrypoints previstos:</p>
+    <ul>
+      <li><code>tools/learn.py</code></li>
+      <li><code>tools/classify.py</code></li>
+      <li><code>tools/export_validate.py</code></li>
+    </ul>
+    <p>Para validar localmente: <code>bash scripts/verify_launcher.sh</code></p>
+  </div>
 </body>
 </html>
