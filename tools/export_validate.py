@@ -8,7 +8,7 @@ Adds validation.total_rows computed from the DB:
 """
 
 from __future__ import annotations
-import os, sys, json, argparse
+import os, sys, json, json, argparse
 from pathlib import Path
 from typing import Dict, Optional
 
@@ -44,6 +44,39 @@ def _compute_validation(batch_id: str) -> dict:
         except Exception:
             pass
     return metrics
+
+
+def _log_export_validation(batch_id: str, artifacts: dict, validation: dict, model_path: str | None = None) -> None:
+    """
+    Tenta inserir um registo em decision_log(action='export_validation').
+    Idempotente: se a tabela não existir, ignora silenciosamente.
+    """
+    try:
+        from app.backend import db as db_module  # type: ignore
+        conn = db_module.connect()
+        try:
+            payload = {
+                "batch_id": batch_id,
+                "model_path": model_path or "",
+                "status": "OK",
+                "validation": validation,
+                "artifacts": artifacts,
+            }
+            now = db_module.now_utc() if hasattr(db_module, "now_utc") else None
+            conn.execute(
+                "INSERT INTO decision_log(action, payload_json, created_at) VALUES (?,?,?)",
+                ("export_validation", json.dumps(payload, ensure_ascii=False), now),
+            )
+            conn.commit()
+        except Exception:
+            pass
+        finally:
+            try:
+                conn.close()
+            except Exception:
+                pass
+    except Exception:
+        pass
 
 def run_export_validation(batch_id: str, model_path: Optional[str] = None, export_dir: Optional[str] = None) -> Dict[str, str]:
     if not batch_id:
