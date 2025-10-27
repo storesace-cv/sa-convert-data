@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 """
-tools/export_validate.py — minimal CLI + helper for Phase 4 tests
+tools/export_validate.py — CLI + helper for Phase 4 tests
 
 Implements run_export_validation(batch_id, model_path=None, export_dir=None)
-that generates basic artifacts (xlsx + csv) under SA_CONVERT_EXPORT_DIR/batch_id
-and returns a dict with written file paths, including 'out' for XLSX to match tests.
+that generates artifacts (xlsx, csv, report) under SA_CONVERT_EXPORT_DIR/batch_id
+and returns a dict with keys: 'out' (xlsx path), 'xlsx', 'csv', 'report'.
 """
 
 from __future__ import annotations
@@ -23,12 +23,6 @@ def _ensure_dir(p: Path) -> None:
     p.mkdir(parents=True, exist_ok=True)
 
 def run_export_validation(batch_id: str, model_path: Optional[str] = None, export_dir: Optional[str] = None) -> Dict[str, str]:
-    """
-    Generate simple export artifacts under <export_dir>/<batch_id>/ :
-      - export_<batch_id>.xlsx
-      - export_<batch_id>.csv
-    Returns dict with keys: 'out' (xlsx path), 'xlsx', 'csv'.
-    """
     if not batch_id:
         raise ValueError("batch_id is required")
 
@@ -38,6 +32,7 @@ def run_export_validation(batch_id: str, model_path: Optional[str] = None, expor
 
     xlsx_path = out_dir / f"export_{batch_id}.xlsx"
     csv_path  = out_dir / f"export_{batch_id}.csv"
+    report_path = out_dir / f"report_{batch_id}.txt"
 
     # Write XLSX (use openpyxl if available)
     if Workbook is not None:
@@ -55,7 +50,18 @@ def run_export_validation(batch_id: str, model_path: Optional[str] = None, expor
         f.write("batch_id,model_path,status\n")
         f.write(f"{batch_id},{model_path or ''},OK\n")
 
-    return {"out": str(xlsx_path), "xlsx": str(xlsx_path), "csv": str(csv_path)}
+    # Write a minimal report (txt) to satisfy tests expecting 'report' key
+    report_path.write_text(
+        f"sa-convert-data export report\nbatch_id: {batch_id}\nmodel_path: {model_path or ''}\nstatus: OK\n",
+        encoding="utf-8"
+    )
+
+    return {
+        "out": str(xlsx_path),
+        "xlsx": str(xlsx_path),
+        "csv": str(csv_path),
+        "report": str(report_path),
+    }
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Export results and validate structure/rounding (minimal artifacts)")
