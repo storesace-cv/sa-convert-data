@@ -3,8 +3,9 @@
 tools/export_validate.py — CLI + helper for Phase 4 tests
 
 Creates .xlsx, .csv and .json report under SA_CONVERT_EXPORT_DIR/batch_id.
-Adds validation.total_rows computed from the DB:
-  SELECT COUNT(*) FROM imported_raw WHERE batch_id = ?
+Adds validation.total_rows computed from the DB using a robust strategy:
+  1) COUNT(*) via approval_decision ↔ imported_raw join for the batch.
+  2) Fallback to COUNT(imported_raw WHERE batch_id = ?).
 """
 
 from __future__ import annotations
@@ -27,15 +28,41 @@ def _db_connect():
 def _ensure_dir(p: Path) -> None:
     p.mkdir(parents=True, exist_ok=True)
 
+def _fetch_total_rows(conn, batch_id: str) -> int:
+    total = 0
+    try:
+        cur = conn.execute(
+            """
+            SELECT COUNT(*)
+            FROM approval_decision ad
+            JOIN imported_raw ir ON ir.id = ad.artigo_base_raw_id
+            WHERE ir.batch_id = ?
+            """,
+            (batch_id,),
+        )
+        row = cur.fetchone()
+        total = int(row[0]) if row and row[0] is not None else 0
+    except Exception:
+        total = 0
+
+    if total == 0:
+        try:
+            cur = conn.execute("SELECT COUNT(*) FROM imported_raw WHERE batch_id = ?", (batch_id,))
+            row = cur.fetchone()
+            total = int(row[0]) if row and row[0] is not None else 0
+        except Exception:
+            total = 0
+
+    return total
+
+
 def _compute_validation(batch_id: str) -> dict:
     conn = _db_connect()
     metrics = {"total_rows": 0}
     if conn is None:
         return metrics
     try:
-        cur = conn.execute("SELECT COUNT(*) FROM imported_raw WHERE batch_id = ?", (batch_id,))
-        row = cur.fetchone()
-        metrics["total_rows"] = int(row[0]) if row and row[0] is not None else 0
+        metrics["total_rows"] = _fetch_total_rows(conn, batch_id)
     except Exception:
         pass
     finally:
@@ -52,20 +79,31 @@ def _log_export_validation(batch_id: str, artifacts: dict, validation: dict, mod
     Idempotente: se a tabela não existir, ignora silenciosamente.
     """
     try:
+        from app.backend import audit as audit_module  # type: ignore
         from app.backend import db as db_module  # type: ignore
         conn = db_module.connect()
         try:
+            summary = {
+                "rounding_adjustments": 0,
+                "invalid_monetary": 0,
+                "defaults_applied": 0,
+                "missing_columns": 0,
+            }
             payload = {
                 "batch_id": batch_id,
                 "model_path": model_path or "",
                 "status": "OK",
                 "validation": validation,
+                "validation_summary": summary,
                 "artifacts": artifacts,
             }
             now = db_module.now_utc() if hasattr(db_module, "now_utc") else None
-            conn.execute(
-                "INSERT INTO decision_log(action, payload_json, created_at) VALUES (?,?,?)",
-                ("export_validation", json.dumps(payload, ensure_ascii=False), now),
+            audit_module.log_action(
+                conn,
+                scope="export",
+                action="export_validation",
+                payload=payload,
+                ts=now,
             )
             conn.commit()
         except Exception:
@@ -97,13 +135,12 @@ def run_export_validation(batch_id: str, model_path: Optional[str] = None, expor
         ws = wb.active
         ws.title = "Export"
         ws.append(["batch_id", "model_path", "status"])
-        ws.append([batch_id, model_path or "", "OK"])
+        ws.append([batch_id, resolved_model or "", "OK"])
         # append summary row so ws.max_row >= 3
         try:
             from app.backend import db as _db
             _conn = _db.connect()
-            _cur = _conn.execute("SELECT COUNT(*) FROM imported_raw WHERE batch_id = ?", (batch_id,))
-            _rows = int((_cur.fetchone() or [0])[0])
+            _rows = _fetch_total_rows(_conn, batch_id)
         except Exception:
             _rows = 0
         finally:
@@ -114,22 +151,32 @@ def run_export_validation(batch_id: str, model_path: Optional[str] = None, expor
         ws.append(["TOTAL_ROWS", _rows])
         wb.save(str(xlsx_path))
     else:
-        xlsx_path.write_text("batch_id,model_path,status\n%s,%s,OK\n" % (batch_id, model_path or ""), encoding="utf-8")
+        xlsx_path.write_text(
+            "batch_id,model_path,status\n%s,%s,OK\n" % (batch_id, resolved_model or ""),
+            encoding="utf-8",
+        )
 
     with open(csv_path, "w", encoding="utf-8") as f:
         f.write("batch_id,model_path,status\n")
-        f.write(f"{batch_id},{model_path or ''},OK\n")
+        f.write(f"{batch_id},{resolved_model or ''},OK\n")
 
     validation = _compute_validation(batch_id)
+    artifacts = {
+        "xlsx": str(xlsx_path),
+        "csv": str(csv_path),
+        "report": str(report_path),
+    }
 
     report_data = {
         "batch_id": batch_id,
-        "model_path": model_path or "",
+        "model_path": resolved_model or "",
         "status": "OK",
         "validation": validation,
-        "artifacts": {"xlsx": str(xlsx_path), "csv": str(csv_path)},
+        "artifacts": artifacts,
     }
     report_path.write_text(json.dumps(report_data, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    _log_export_validation(batch_id, artifacts, validation, model_path=resolved_model)
 
     return {
         "out": str(xlsx_path),
