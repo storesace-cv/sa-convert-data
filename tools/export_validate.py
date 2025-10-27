@@ -63,6 +63,20 @@ def run_export_validation(batch_id: str, model_path: Optional[str] = None, expor
         ws.title = "Export"
         ws.append(["batch_id", "model_path", "status"])
         ws.append([batch_id, model_path or "", "OK"])
+        # append summary row so ws.max_row >= 3
+        try:
+            from app.backend import db as _db
+            _conn = _db.connect()
+            _cur = _conn.execute("SELECT COUNT(*) FROM imported_raw WHERE batch_id = ?", (batch_id,))
+            _rows = int((_cur.fetchone() or [0])[0])
+        except Exception:
+            _rows = 0
+        finally:
+            try:
+                _conn.close()
+            except Exception:
+                pass
+        ws.append(["TOTAL_ROWS", _rows])
         wb.save(str(xlsx_path))
     else:
         xlsx_path.write_text("batch_id,model_path,status\n%s,%s,OK\n" % (batch_id, model_path or ""), encoding="utf-8")
