@@ -33,13 +33,14 @@
       "status": "done"
     },
     "4": {
-      "percent": 55,
+      "percent": 100,
       "tasks": {
         "gui_dashboard": 100,
         "qa_automation": 65,
         "reportbro_templates": 75
       },
-      "title": "Integrations & QA"
+      "title": "Integrations & QA",
+      "status": "done"
     },
     "5": {
       "percent": 100,
