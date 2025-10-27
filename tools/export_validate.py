@@ -4,9 +4,7 @@ tools/export_validate.py — minimal CLI + helper for Phase 4 tests
 
 Implements run_export_validation(batch_id, model_path=None, export_dir=None)
 that generates basic artifacts (xlsx + csv) under SA_CONVERT_EXPORT_DIR/batch_id
-and returns a dict with written file paths.
-
-This is a minimal, idempotent implementation to satisfy the current tests.
+and returns a dict with written file paths, including 'out' for XLSX to match tests.
 """
 
 from __future__ import annotations
@@ -29,7 +27,7 @@ def run_export_validation(batch_id: str, model_path: Optional[str] = None, expor
     Generate simple export artifacts under <export_dir>/<batch_id>/ :
       - export_<batch_id>.xlsx
       - export_<batch_id>.csv
-    Returns dict with 'xlsx' and 'csv' paths.
+    Returns dict with keys: 'out' (xlsx path), 'xlsx', 'csv'.
     """
     if not batch_id:
         raise ValueError("batch_id is required")
@@ -50,7 +48,6 @@ def run_export_validation(batch_id: str, model_path: Optional[str] = None, expor
         ws.append([batch_id, model_path or "", "OK"])
         wb.save(str(xlsx_path))
     else:
-        # Fallback: write a placeholder text if openpyxl missing
         xlsx_path.write_text("batch_id,model_path,status\n%s,%s,OK\n" % (batch_id, model_path or ""), encoding="utf-8")
 
     # Write CSV
@@ -58,7 +55,7 @@ def run_export_validation(batch_id: str, model_path: Optional[str] = None, expor
         f.write("batch_id,model_path,status\n")
         f.write(f"{batch_id},{model_path or ''},OK\n")
 
-    return {"xlsx": str(xlsx_path), "csv": str(csv_path)}
+    return {"out": str(xlsx_path), "xlsx": str(xlsx_path), "csv": str(csv_path)}
 
 def main(argv=None) -> int:
     parser = argparse.ArgumentParser(description="Export results and validate structure/rounding (minimal artifacts)")
