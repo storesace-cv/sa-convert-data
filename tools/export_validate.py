@@ -86,8 +86,10 @@ def run_export_validation(batch_id: str, model_path: Optional[str] = None, expor
     out_dir = base_dir / batch_id
     _ensure_dir(out_dir)
 
-    xlsx_path   = out_dir / f"export_{batch_id}.xlsx"
-    csv_path    = out_dir / f"export_{batch_id}.csv"
+    resolved_model = model_path or _default_model_path()
+
+    xlsx_path = out_dir / f"export_{batch_id}.xlsx"
+    csv_path = out_dir / f"export_{batch_id}.csv"
     report_path = out_dir / f"report_{batch_id}.json"
 
     if Workbook is not None:
