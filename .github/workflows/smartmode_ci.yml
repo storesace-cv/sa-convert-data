@@ -2,8 +2,9 @@ name: SmartMode CI
 
 on:
   push:
-    branches: [ my-**, feature/**, main ]
+    branches: [ main, my-**, feature/** ]
   pull_request:
+  workflow_dispatch:
 
 jobs:
   verify:
@@ -13,16 +14,22 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.11'
-      - name: Install basics
+
+      - name: Install OS deps
         run: |
-          python -m pip install -U pip
-          pip install jq || true
+          sudo apt-get update
+          sudo apt-get install -y jq
+
+      - name: Make scripts executable (safety)
+        run: |
+          chmod +x scripts/*.sh 2>/dev/null || true
+          chmod +x scripts/launchers/*.sh 2>/dev/null || true
+
       - name: Verify Phase 1
-        run: |
-          bash scripts/verify_phase1_bootstrap.sh
+        run: bash scripts/verify_phase1_bootstrap.sh
+
       - name: Verify Launcher
-        run: |
-          bash scripts/verify_launcher.sh || true
+        run: bash scripts/verify_launcher.sh || true
+
       - name: Verify Progress
-        run: |
-          bash scripts/verify_progress.sh
+        run: bash scripts/verify_progress.sh
