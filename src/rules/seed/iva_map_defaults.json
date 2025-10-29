@@ -1,0 +1,40 @@
+{
+  "id": "iva_map_defaults",
+  "name": "IVA Default Mapping by Country",
+  "description": "Default IVA rates per country. PT: 6/13/23%, AO: 7/14%, CV: 0/15%. Used for validation and auto-fill.",
+  "version": "1.0.0",
+  "kind": "decision_table",
+  "state": "prod",
+  "author": "System",
+  "createdAt": "2025-01-01T00:00:00Z",
+  "updatedAt": "2025-01-01T00:00:00Z",
+  "tags": ["iva", "validation", "country-specific"],
+  "columns": ["country", "tipo", "valid_iva_rates", "default_iva"],
+  "rows": [
+    ["PT", "COMIDA (INGREDIENTE)", [6, 13, 23], 6],
+    ["PT", "BEBIDA (INGREDIENTE)", [6, 13, 23], 13],
+    ["PT", "MERCADORIA", [6, 13, 23], 23],
+    ["PT", "PRODUCAO", [6, 13, 23], 23],
+    ["PT", "VENDA", [6, 13, 23], 23],
+    ["AO", "*", [7, 14], 14],
+    ["CV", "*", [0, 15], 15]
+  ],
+  "resolution": "first_match",
+  "tests": [
+    {
+      "name": "pt_comida",
+      "input": {"country": "PT", "tipo": "COMIDA (INGREDIENTE)"},
+      "expect": {"default_iva": 6, "valid_rates": [6, 13, 23]}
+    },
+    {
+      "name": "ao_any",
+      "input": {"country": "AO", "tipo": "MERCADORIA"},
+      "expect": {"default_iva": 14, "valid_rates": [7, 14]}
+    },
+    {
+      "name": "cv_any",
+      "input": {"country": "CV", "tipo": "VENDA"},
+      "expect": {"default_iva": 15, "valid_rates": [0, 15]}
+    }
+  ]
+}

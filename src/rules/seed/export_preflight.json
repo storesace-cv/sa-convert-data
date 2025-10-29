@@ -1,0 +1,62 @@
+{
+  "id": "export_preflight",
+  "name": "Pre-Export Validation Checks",
+  "description": "Validates data before export: IVA mandatory per country, units from whitelist, no unresolved duplicates, required fields present.",
+  "version": "1.0.0",
+  "kind": "decision_tree",
+  "state": "prod",
+  "author": "System",
+  "createdAt": "2025-01-01T00:00:00Z",
+  "updatedAt": "2025-01-01T00:00:00Z",
+  "tags": ["validation", "export", "preflight"],
+  "input_schema": "item_v1",
+  "output_schema": "validation_result_v1",
+  "nodes": [
+    {
+      "id": "root",
+      "if": "isEmpty(iva)",
+      "then": { "goto": "fail_iva" },
+      "else": { "goto": "check_unidade" }
+    },
+    {
+      "id": "check_unidade",
+      "if": "!isValidUnidade(unidade)",
+      "then": { "goto": "fail_unidade" },
+      "else": { "goto": "check_duplicado" }
+    },
+    {
+      "id": "check_duplicado",
+      "if": "hasUnresolvedDuplicate(item)",
+      "then": { "goto": "fail_duplicado" },
+      "else": { "goto": "pass" }
+    },
+    {
+      "id": "fail_iva",
+      "decision": {"valid": false, "error": "IVA is mandatory for export"}
+    },
+    {
+      "id": "fail_unidade",
+      "decision": {"valid": false, "error": "Invalid unidade - must be from whitelist"}
+    },
+    {
+      "id": "fail_duplicado",
+      "decision": {"valid": false, "error": "Unresolved duplicate - merge or remove before export"}
+    },
+    {
+      "id": "pass",
+      "decision": {"valid": true, "message": "Ready for export"}
+    }
+  ],
+  "tests": [
+    {
+      "name": "valid_item",
+      "input": {"iva": 23, "unidade": "UN", "duplicado": null},
+      "expect": {"valid": true}
+    },
+    {
+      "name": "missing_iva",
+      "input": {"iva": null, "unidade": "UN"},
+      "expect": {"valid": false, "error": "IVA is mandatory"}
+    }
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "name": "StoresAce - Gestão de Artigos",
+  "short_name": "StoresAce",
+  "description": "Gestão de Artigos & Ingredientes para Restauração",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a2332",
+  "theme_color": "#2563eb",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "https://d64gsuwffb70l.cloudfront.net/68ffd88cfab1e11bf1fcc950_1761597642162_9675ae44.webp",
+      "sizes": "512x512",
+      "type": "image/webp",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["business", "productivity"],
+  "lang": "pt-PT",
+  "dir": "ltr"
+}

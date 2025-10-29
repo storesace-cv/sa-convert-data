@@ -1,0 +1,60 @@
+{
+  "id": "classification_tipo",
+  "name": "Classification by Family/Subfamily",
+  "description": "Validates tipo based on familia/subfamilia presence. Without family: only COMIDA/BEBIDA (INGREDIENTE). With family: blocks COMIDA (INGREDIENTE).",
+  "version": "1.0.0",
+  "kind": "decision_tree",
+  "state": "prod",
+  "author": "System",
+  "createdAt": "2025-01-01T00:00:00Z",
+  "updatedAt": "2025-01-01T00:00:00Z",
+  "tags": ["classification", "validation", "core"],
+  "input_schema": "item_v1",
+  "output_schema": "classification_v1",
+  "nodes": [
+    {
+      "id": "root",
+      "if": "isEmpty(familia) && isEmpty(subfamilia)",
+      "then": { "goto": "leaf_sem_fam" },
+      "else": { "goto": "leaf_com_fam" }
+    },
+    {
+      "id": "leaf_sem_fam",
+      "decision": {
+        "allow_tipo_in": ["COMIDA (INGREDIENTE)", "BEBIDA (INGREDIENTE)"],
+        "block_tipo_in": ["MERCADORIA", "PRODUCAO", "VENDA"],
+        "message": "No family/subfamily → only ingredient types allowed."
+      }
+    },
+    {
+      "id": "leaf_com_fam",
+      "decision": {
+        "block_tipo_in": ["COMIDA (INGREDIENTE)"],
+        "allow_tipo_any": true,
+        "message": "With family/subfamily → cannot be COMIDA (INGREDIENTE)."
+      }
+    }
+  ],
+  "tests": [
+    {
+      "name": "no_family_allows_comida",
+      "input": {"familia": null, "subfamilia": null, "tipo": "COMIDA (INGREDIENTE)"},
+      "expect": {"valid": true}
+    },
+    {
+      "name": "no_family_blocks_mercadoria",
+      "input": {"familia": null, "subfamilia": null, "tipo": "MERCADORIA"},
+      "expect": {"valid": false}
+    },
+    {
+      "name": "with_family_blocks_comida",
+      "input": {"familia": "COZINHA", "subfamilia": "GRELHA", "tipo": "COMIDA (INGREDIENTE)"},
+      "expect": {"valid": false}
+    },
+    {
+      "name": "with_family_allows_mercadoria",
+      "input": {"familia": "COZINHA", "subfamilia": "GRELHA", "tipo": "MERCADORIA"},
+      "expect": {"valid": true}
+    }
+  ]
+}

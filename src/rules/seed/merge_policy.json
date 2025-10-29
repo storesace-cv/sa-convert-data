@@ -1,0 +1,48 @@
+{
+  "id": "merge_policy",
+  "name": "Duplicate Merge Policy",
+  "description": "Defines field resolution when merging duplicates. Original row gets 'Duplicado?' = concat of duplicate codigo_antigo. Duplicate rows get 'Duplicado?' = Original's codigo_antigo.",
+  "version": "1.0.0",
+  "kind": "decision_tree",
+  "state": "prod",
+  "author": "System",
+  "createdAt": "2025-01-01T00:00:00Z",
+  "updatedAt": "2025-01-01T00:00:00Z",
+  "tags": ["merge", "deduplication", "core"],
+  "input_schema": "merge_request_v1",
+  "output_schema": "merge_result_v1",
+  "nodes": [
+    {
+      "id": "root",
+      "decision": {
+        "policy": "keep_original",
+        "original_duplicado": "concat_duplicate_codes",
+        "duplicate_duplicado": "original_codigo_antigo",
+        "field_priority": [
+          {"field": "descricao", "source": "original"},
+          {"field": "gtin", "source": "first_valid"},
+          {"field": "iva", "source": "original_or_inherit"},
+          {"field": "unidade", "source": "original_or_inherit"},
+          {"field": "familia", "source": "original"},
+          {"field": "subfamilia", "source": "original"},
+          {"field": "tipo", "source": "original"},
+          {"field": "class_tag", "source": "original"}
+        ],
+        "message": "Merge keeps original values, marks duplicates appropriately"
+      }
+    }
+  ],
+  "tests": [
+    {
+      "name": "basic_merge",
+      "input": {
+        "original": {"codigo_antigo": "A001", "descricao": "ARROZ"},
+        "duplicates": [{"codigo_antigo": "A002"}, {"codigo_antigo": "A003"}]
+      },
+      "expect": {
+        "original": {"Duplicado?": "A002 - A003"},
+        "duplicates": [{"Duplicado?": "A001"}, {"Duplicado?": "A001"}]
+      }
+    }
+  ]
+}
