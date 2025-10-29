@@ -1,0 +1,53 @@
+{
+  "id": "class_tag_315",
+  "name": "Class Tag 315 (COMPRA vs COMPRA/VENDA)",
+  "description": "Runner 315: Sets class_tag to COMPRA if no familia/subfamilia, otherwise COMPRA/VENDA. Idempotent - safe to re-run.",
+  "version": "1.0.0",
+  "kind": "decision_tree",
+  "state": "prod",
+  "author": "System",
+  "createdAt": "2025-01-01T00:00:00Z",
+  "updatedAt": "2025-01-01T00:00:00Z",
+  "tags": ["classification", "runner-315", "core"],
+  "input_schema": "item_v1",
+  "output_schema": "class_tag_v1",
+  "nodes": [
+    {
+      "id": "root",
+      "if": "isEmpty(familia) && isEmpty(subfamilia)",
+      "then": { "goto": "leaf_compra" },
+      "else": { "goto": "leaf_compra_venda" }
+    },
+    {
+      "id": "leaf_compra",
+      "decision": {
+        "set": { "class_tag": "COMPRA" },
+        "message": "No family/subfamily → COMPRA"
+      }
+    },
+    {
+      "id": "leaf_compra_venda",
+      "decision": {
+        "set": { "class_tag": "COMPRA/VENDA" },
+        "message": "With family/subfamily → COMPRA/VENDA"
+      }
+    }
+  ],
+  "tests": [
+    {
+      "name": "no_family_sets_compra",
+      "input": {"familia": null, "subfamilia": null},
+      "expect": {"class_tag": "COMPRA"}
+    },
+    {
+      "name": "with_family_sets_compra_venda",
+      "input": {"familia": "COZINHA", "subfamilia": "GRELHA"},
+      "expect": {"class_tag": "COMPRA/VENDA"}
+    },
+    {
+      "name": "idempotent_compra",
+      "input": {"familia": null, "subfamilia": null, "class_tag": "COMPRA"},
+      "expect": {"class_tag": "COMPRA"}
+    }
+  ]
+}

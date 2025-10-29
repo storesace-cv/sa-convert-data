@@ -1,0 +1,32 @@
+{
+  "id": "dedupe_score",
+  "name": "Deduplication Score Calculator",
+  "description": "Calculates similarity score ≥85% threshold. Base: normalized description Levenshtein. Weights: +10% same GTIN, +5% same familia/subfamilia, +3% same unidade.",
+  "version": "1.0.0",
+  "kind": "script",
+  "state": "prod",
+  "author": "System",
+  "createdAt": "2025-01-01T00:00:00Z",
+  "updatedAt": "2025-01-01T00:00:00Z",
+  "tags": ["deduplication", "fuzzy-match", "core"],
+  "language": "safe-dsl",
+  "code": "function calculateScore(item1, item2) {\n  // Base score from normalized description\n  const desc1 = removeAccents(item1.descricao || '').toUpperCase();\n  const desc2 = removeAccents(item2.descricao || '').toUpperCase();\n  let score = similarity(desc1, desc2) * 100;\n  \n  // Bonus weights\n  if (item1.gtin && item2.gtin && item1.gtin === item2.gtin) {\n    score += 10;\n  }\n  \n  if (item1.familia && item2.familia && \n      item1.familia === item2.familia && \n      item1.subfamilia === item2.subfamilia) {\n    score += 5;\n  }\n  \n  if (item1.unidade && item2.unidade && item1.unidade === item2.unidade) {\n    score += 3;\n  }\n  \n  return Math.min(score, 100);\n}\n\nconst score = calculateScore(input.item1, input.item2);\nreturn {\n  score: score,\n  isDuplicate: score >= 85,\n  threshold: 85\n};",
+  "tests": [
+    {
+      "name": "exact_match",
+      "input": {
+        "item1": {"descricao": "ARROZ BRANCO", "gtin": "1234"},
+        "item2": {"descricao": "ARROZ BRANCO", "gtin": "1234"}
+      },
+      "expect": {"isDuplicate": true, "score": 100}
+    },
+    {
+      "name": "below_threshold",
+      "input": {
+        "item1": {"descricao": "ARROZ BRANCO"},
+        "item2": {"descricao": "FEIJAO PRETO"}
+      },
+      "expect": {"isDuplicate": false}
+    }
+  ]
+}
