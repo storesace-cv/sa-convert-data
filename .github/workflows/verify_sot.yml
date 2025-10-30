@@ -1,0 +1,23 @@
+name: Verify SoT Sync
+on:
+  pull_request:
+    branches: [ main ]
+jobs:
+  verify-sot:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check SoT files exist
+        run: |
+          test -f docs/en/codex/architecture/app-status-index.json
+          test -f docs/en/codex/architecture/app-status2gpt.md
+      - name: Verify “SQLite present” and “IndexedDB demoted”
+        run: |
+          # Falha se o SoT ainda disser que a persistência é só IndexedDB/localStorage
+          jq -e '.database.engines | index("SQLite")' docs/en/codex/architecture/app-status-index.json >/dev/null
+          # Opcional: falha se faltar migrações e DAL
+          jq -e '.modules[] | select(.name | test("Migration|DAL|SQLite"; "i"))' docs/en/codex/architecture/app-status-index.json >/dev/null
+      - name: Verify Progress snapshot updated
+        run: |
+          test -f docs/en/codex/progress.json
+          jq -e '.milestones[] | select(.id=="SQLite-LP" and .status=="done")' docs/en/codex/progress.json >/dev/null
