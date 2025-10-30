@@ -1,233 +1,234 @@
 {
-    "repo": {
-        "name": "sa-convert-data",
-        "default_branch": "main",
-        "revision": "71ab33a",
-        "generated_utc": "2025-10-29T10:28:20Z"
-    },
-    "stack": {
-        "languages": [
-            "TypeScript",
-            "JavaScript",
-            "CSS"
-        ],
-        "frameworks": [
-            "React",
-            "React Router",
-            "Radix UI",
-            "Tailwind CSS",
-            "React Query"
-        ],
-        "build": [
-            "Vite",
-            "SWC",
-            "PostCSS",
-            "Tailwind CLI"
-        ],
-        "runtime": [
-            "Browser",
-            "Node.js (build)"
-        ]
-    },
-    "entry_points": {
-        "cli": [
-            "npm run dev",
-            "npm run build",
-            "npm run preview"
-        ],
-        "gui": [
-            "src/main.tsx (SPA bootstrap mounted on #root)"
-        ],
-        "services": []
-    },
-    "modules": [
-        {
-            "name": "Main bootstrap",
-            "path": "src/main.tsx",
-            "purpose": "Registers service worker and renders App under AuthProvider.",
-            "deps_internal": [
-                "src/App.tsx",
-                "src/contexts/AuthContext.tsx",
-                "src/utils/registerSW.ts"
-            ],
-            "deps_external": [
-                "react-dom"
-            ]
-        },
-        {
-            "name": "Application shell",
-            "path": "src/App.tsx",
-            "purpose": "Sets up theme, React Query, router, and high-level routes.",
-            "deps_internal": [
-                "src/pages/Index.tsx",
-                "src/pages/NotFound.tsx",
-                "src/components/theme-provider.tsx"
-            ],
-            "deps_external": [
-                "@tanstack/react-query",
-                "react-router-dom"
-            ]
-        },
-        {
-            "name": "Workspace layout",
-            "path": "src/components/AppLayout.tsx",
-            "purpose": "Provides navigation shell, module switching, item CRUD, offline integration, and toasts.",
-            "deps_internal": [
-                "src/components/Sidebar.tsx",
-                "src/components/TopBar.tsx",
-                "src/components/ImportModule.tsx",
-                "src/hooks/useOfflineSync.ts",
-                "src/hooks/useIndexedDB.ts",
-                "src/utils/normalization.ts"
-            ],
-            "deps_external": [
-                "uuid"
-            ]
-        },
-        {
-            "name": "Authentication context",
-            "path": "src/contexts/AuthContext.tsx",
-            "purpose": "Manages Supabase session, profile loading, and mock admin fallback.",
-            "deps_internal": [
-                "src/lib/supabase.ts"
-            ],
-            "deps_external": [
-                "@supabase/supabase-js"
-            ]
-        },
-        {
-            "name": "Rule registry hook",
-            "path": "src/hooks/useRuleRegistry.ts",
-            "purpose": "IndexedDB-backed CRUD for rules plus seeding logic.",
-            "deps_internal": [
-                "src/rules/seedRules.ts"
-            ],
-            "deps_external": []
-        },
-        {
-            "name": "Approvals workflow hook",
-            "path": "src/hooks/useApprovals.ts",
-            "purpose": "Handles approval requests, timelines, and Supabase notifications.",
-            "deps_internal": [
-                "src/hooks/useIndexedDB.ts",
-                "src/types/rule.ts"
-            ],
-            "deps_external": [
-                "@supabase/supabase-js"
-            ]
-        },
-        {
-            "name": "Rule evaluation utilities",
-            "path": "src/utils/ruleExecutionEngine.ts",
-            "purpose": "Executes decision trees, tables, and script rules with timing and error capture.",
-            "deps_internal": [
-                "src/types/rule.ts",
-                "src/utils/fuzzy.ts"
-            ],
-            "deps_external": []
-        },
-        {
-            "name": "Conflict detection utilities",
-            "path": "src/utils/conflictDetector.ts",
-            "purpose": "Calculates overlapping, contradictory, duplicate, and schedule conflicts between rules.",
-            "deps_internal": [
-                "src/types/rule.ts"
-            ],
-            "deps_external": []
-        },
-        {
-            "name": "PWA service worker",
-            "path": "public/sw.js",
-            "purpose": "Cache-first strategy for shell assets with install/fetch/activate handlers.",
-            "deps_internal": [],
-            "deps_external": []
-        }
+  "repo": {
+    "name": "sa-convert-data",
+    "default_branch": "main",
+    "revision": "71ab33a",
+    "generated_utc": "2025-10-30T14:29:32Z"
+  },
+  "stack": {
+    "languages": [
+      "TypeScript",
+      "JavaScript",
+      "CSS"
     ],
-    "database": {
-        "engines": [
-            "IndexedDB",
-            "localStorage",
-            "Supabase (remote)"
-        ],
-        "files": [],
-        "migrations": [],
-        "schemas": [
-            "StoresAceDB.items/audit",
-            "storesace_rules.rules",
-            "storesace_testcases.testcases",
-            "StoresAceDB.ruleHistory"
-        ],
-        "notes": "Persistence relies on browser storage with manual seeding; Supabase used only for auth/profile lookups. No SQL migrations present."
-    },
-    "config": {
-        "env_vars": [],
-        "files": [
-            "vite.config.ts",
-            "tailwind.config.ts",
-            "postcss.config.js",
-            "tsconfig.json",
-            "tsconfig.app.json",
-            "tsconfig.node.json",
-            "eslint.config.js"
-        ],
-        "secrets_handling": "Supabase URL and anon key are hard-coded in src/lib/supabase.ts; admin credentials embedded in AuthContext. No env management."
-    },
-    "artifacts": {
-        "packages": [],
-        "binaries": [],
-        "reports": [
-            "docs/en/codex/architecture/app-deep-dive-report.md",
-            "docs/en/codex/architecture/app-improvement-proposals.md"
-        ]
-    },
-    "tests": {
-        "exists": false,
-        "types": [],
-        "coverage_hint": "Manual acceptance checklist in TESTING_GUIDE.md; no automated test suite."
-    },
-    "observability": {
-        "logs": [
-            "Console logs in service worker and offline sync hook"
-        ],
-        "metrics": [
-            "UI-level summary metrics displayed in Dashboard/Metrics modules"
-        ],
-        "tracing": [],
-        "health": []
-    },
-    "security": {
-        "threats": [
-            "Hard-coded Supabase credentials and mock admin password",
-            "RuleEvaluator executes user-provided DSL via new Function",
-            "Service worker caches arbitrary requests without validation"
-        ],
-        "controls": [
-            "Supabase authentication APIs",
-            "Role hints in AuthContext"
-        ],
-        "deps_licenses": [
-            "Third-party dependencies primarily MIT/BSD; repository claims proprietary license in README"
-        ]
-    },
-    "known_gaps": [
-        "IndexedDB helper lacks generic CRUD required by approvals/test modules",
-        "No automated testing or CI pipeline",
-        "Offline sync queue never replays stored operations",
-        "Configuration secrets hard-coded in source"
+    "frameworks": [
+      "React",
+      "React Router",
+      "Radix UI",
+      "Tailwind CSS",
+      "React Query"
     ],
-    "roadmap_snapshot": {
-        "p0": [
-            "Rebuild IndexedDB data layer for approvals/history/testcases",
-            "Secure Supabase auth configuration and sandbox rule execution"
-        ],
-        "p1": [
-            "Introduce automated QA pipeline",
-            "Improve offline sync and cache strategy",
-            "Add structured logging and metrics"
-        ],
-        "p2": [
-            "Optimize performance and UX via code splitting and workers",
-            "Enhance developer experience with tooling and documentation"
-        ]
+    "build": [
+      "Vite",
+      "SWC",
+      "PostCSS",
+      "Tailwind CLI"
+    ],
+    "runtime": [
+      "Browser",
+      "Node.js (build)"
+    ]
+  },
+  "entry_points": {
+    "cli": [
+      "npm run dev",
+      "npm run build",
+      "npm run preview"
+    ],
+    "gui": [
+      "src/main.tsx (SPA bootstrap mounted on #root)"
+    ],
+    "services": []
+  },
+  "modules": [
+    {
+      "name": "Main bootstrap",
+      "path": "src/main.tsx",
+      "purpose": "Registers service worker and renders App under AuthProvider.",
+      "deps_internal": [
+        "src/App.tsx",
+        "src/contexts/AuthContext.tsx",
+        "src/utils/registerSW.ts"
+      ],
+      "deps_external": [
+        "react-dom"
+      ]
+    },
+    {
+      "name": "Application shell",
+      "path": "src/App.tsx",
+      "purpose": "Sets up theme, React Query, router, and high-level routes.",
+      "deps_internal": [
+        "src/pages/Index.tsx",
+        "src/pages/NotFound.tsx",
+        "src/components/theme-provider.tsx"
+      ],
+      "deps_external": [
+        "@tanstack/react-query",
+        "react-router-dom"
+      ]
+    },
+    {
+      "name": "Workspace layout",
+      "path": "src/components/AppLayout.tsx",
+      "purpose": "Provides navigation shell, module switching, item CRUD, offline integration, and toasts.",
+      "deps_internal": [
+        "src/components/Sidebar.tsx",
+        "src/components/TopBar.tsx",
+        "src/components/ImportModule.tsx",
+        "src/hooks/useOfflineSync.ts",
+        "src/hooks/useIndexedDB.ts",
+        "src/utils/normalization.ts"
+      ],
+      "deps_external": [
+        "uuid"
+      ]
+    },
+    {
+      "name": "Authentication context",
+      "path": "src/contexts/AuthContext.tsx",
+      "purpose": "Manages Supabase session, profile loading, and mock admin fallback.",
+      "deps_internal": [
+        "src/lib/supabase.ts"
+      ],
+      "deps_external": [
+        "@supabase/supabase-js"
+      ]
+    },
+    {
+      "name": "Rule registry hook",
+      "path": "src/hooks/useRuleRegistry.ts",
+      "purpose": "IndexedDB-backed CRUD for rules plus seeding logic.",
+      "deps_internal": [
+        "src/rules/seedRules.ts"
+      ],
+      "deps_external": []
+    },
+    {
+      "name": "Approvals workflow hook",
+      "path": "src/hooks/useApprovals.ts",
+      "purpose": "Handles approval requests, timelines, and Supabase notifications.",
+      "deps_internal": [
+        "src/hooks/useIndexedDB.ts",
+        "src/types/rule.ts"
+      ],
+      "deps_external": [
+        "@supabase/supabase-js"
+      ]
+    },
+    {
+      "name": "Rule evaluation utilities",
+      "path": "src/utils/ruleExecutionEngine.ts",
+      "purpose": "Executes decision trees, tables, and script rules with timing and error capture.",
+      "deps_internal": [
+        "src/types/rule.ts",
+        "src/utils/fuzzy.ts"
+      ],
+      "deps_external": []
+    },
+    {
+      "name": "Conflict detection utilities",
+      "path": "src/utils/conflictDetector.ts",
+      "purpose": "Calculates overlapping, contradictory, duplicate, and schedule conflicts between rules.",
+      "deps_internal": [
+        "src/types/rule.ts"
+      ],
+      "deps_external": []
+    },
+    {
+      "name": "PWA service worker",
+      "path": "public/sw.js",
+      "purpose": "Cache-first strategy for shell assets with install/fetch/activate handlers.",
+      "deps_internal": [],
+      "deps_external": []
     }
+  ],
+  "database": {
+    "engines": [
+      "IndexedDB",
+      "SQLite",
+      "Supabase (remote)",
+      "localStorage"
+    ],
+    "files": [],
+    "migrations": [],
+    "schemas": [
+      "StoresAceDB.items/audit",
+      "storesace_rules.rules",
+      "storesace_testcases.testcases",
+      "StoresAceDB.ruleHistory"
+    ],
+    "notes": "Persistence relies on browser storage with manual seeding; Supabase used only for auth/profile lookups. No SQL migrations present."
+  },
+  "config": {
+    "env_vars": [],
+    "files": [
+      "vite.config.ts",
+      "tailwind.config.ts",
+      "postcss.config.js",
+      "tsconfig.json",
+      "tsconfig.app.json",
+      "tsconfig.node.json",
+      "eslint.config.js"
+    ],
+    "secrets_handling": "Supabase URL and anon key are hard-coded in src/lib/supabase.ts; admin credentials embedded in AuthContext. No env management."
+  },
+  "artifacts": {
+    "packages": [],
+    "binaries": [],
+    "reports": [
+      "docs/en/codex/architecture/app-deep-dive-report.md",
+      "docs/en/codex/architecture/app-improvement-proposals.md"
+    ]
+  },
+  "tests": {
+    "exists": false,
+    "types": [],
+    "coverage_hint": "Manual acceptance checklist in TESTING_GUIDE.md; no automated test suite."
+  },
+  "observability": {
+    "logs": [
+      "Console logs in service worker and offline sync hook"
+    ],
+    "metrics": [
+      "UI-level summary metrics displayed in Dashboard/Metrics modules"
+    ],
+    "tracing": [],
+    "health": []
+  },
+  "security": {
+    "threats": [
+      "Hard-coded Supabase credentials and mock admin password",
+      "RuleEvaluator executes user-provided DSL via new Function",
+      "Service worker caches arbitrary requests without validation"
+    ],
+    "controls": [
+      "Supabase authentication APIs",
+      "Role hints in AuthContext"
+    ],
+    "deps_licenses": [
+      "Third-party dependencies primarily MIT/BSD; repository claims proprietary license in README"
+    ]
+  },
+  "known_gaps": [
+    "IndexedDB helper lacks generic CRUD required by approvals/test modules",
+    "No automated testing or CI pipeline",
+    "Offline sync queue never replays stored operations",
+    "Configuration secrets hard-coded in source"
+  ],
+  "roadmap_snapshot": {
+    "p0": [
+      "Rebuild IndexedDB data layer for approvals/history/testcases",
+      "Secure Supabase auth configuration and sandbox rule execution"
+    ],
+    "p1": [
+      "Introduce automated QA pipeline",
+      "Improve offline sync and cache strategy",
+      "Add structured logging and metrics"
+    ],
+    "p2": [
+      "Optimize performance and UX via code splitting and workers",
+      "Enhance developer experience with tooling and documentation"
+    ]
+  }
 }

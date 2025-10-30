@@ -1,0 +1,11 @@
+{
+  "generated_utc": "2025-10-30T14:29:32Z",
+  "milestones": [
+    {
+      "id": "SQLite-LP",
+      "title": "Local SQLite persistence (WASM + OPFS)",
+      "status": "done",
+      "timestamp": "2025-10-30T14:29:32Z"
+    }
+  ]
+}
