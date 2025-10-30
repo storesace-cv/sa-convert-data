@@ -63,3 +63,5 @@
 
 ---
 For deeper architectural analysis refer to the [app-deep-dive report](./app-deep-dive-report.md). For prioritized remediation details see the [improvement plan](./app-improvement-proposals.md). Keep this SoT synchronized with any substantial changes.
+
+> SoT updated for SQLite-LP at 2025-10-30T14:29:32Z.

@@ -1,21 +1,11 @@
 {
-    "tasks": [
-        {
-            "id": "310-REQS",
-            "title": "Gerar requirements.txt a partir do c\u00f3digo existente",
-            "status": "completed",
-            "completed_utc": "2025-10-30T14:52:40Z",
-            "branch": "codex/reqs-init",
-            "commit": "ecc5f2b771d08de725b79afd0081c8b2510fbc03",
-            "artifacts": [
-                "requirements.txt",
-                "requirements.in",
-                "scripts/verify_requirements.sh"
-            ],
-            "notes": [
-                "Nenhum ficheiro Python detectado em src/, app/ ou scripts/.",
-                "requirements.txt permanece vazio por aus\u00eancia de depend\u00eancias de runtime."
-            ]
-        }
-    ]
+  "generated_utc": "2025-10-30T14:29:32Z",
+  "milestones": [
+    {
+      "id": "SQLite-LP",
+      "title": "Local SQLite persistence (WASM + OPFS)",
+      "status": "done",
+      "timestamp": "2025-10-30T14:29:32Z"
+    }
+  ]
 }
